@@ -1,4 +1,4 @@
-const SG_API = 'http://localhost:8000/graphql';
+const API_BASE = 'http://127.0.0.1:8000';
 const TOKEN_KEY = 'sg_auth_token';
 const USER_KEY  = 'sg_auth_user';
 const EXP_KEY   = 'sg_auth_exp';
@@ -21,8 +21,12 @@ function sgGetUser() {
 
 function sgSetAuth(token, user) {
     const expMs = Date.now() + 14 * 24 * 60 * 60 * 1000;
+    const normalized = { ...user };
+    if (normalized.full_name && !normalized.fullName) {
+        normalized.fullName = normalized.full_name;
+    }
     localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY,  JSON.stringify(user));
+    localStorage.setItem(USER_KEY,  JSON.stringify(normalized));
     localStorage.setItem(EXP_KEY,   String(expMs));
 }
 
@@ -30,19 +34,24 @@ function sgClearAuth() {
     [TOKEN_KEY, USER_KEY, EXP_KEY].forEach(k => localStorage.removeItem(k));
 }
 
-async function sgGql(query, variables = {}) {
+async function sgApi(path, { method = 'GET', body, headers = {} } = {}) {
     const token = sgGetToken();
-    const headers = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const reqHeaders = { 'Content-Type': 'application/json', ...headers };
+    if (token) reqHeaders['Authorization'] = `Bearer ${token}`;
 
-    const res = await fetch(SG_API, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ query, variables }),
+    const res = await fetch(`${API_BASE}${path}`, {
+        method,
+        headers: reqHeaders,
+        body: body ? JSON.stringify(body) : undefined,
     });
-    const json = await res.json();
-    if (json.errors?.length) throw new Error(json.errors.map(e => e.message).join(' | '));
-    return json.data;
+
+    let data = {};
+    try { data = await res.json(); } catch { data = {}; }
+    if (!res.ok) {
+        const detail = data.detail || 'Error al conectar con el servidor.';
+        throw new Error(detail);
+    }
+    return data;
 }
 
 function _injectDropdownCSS() {

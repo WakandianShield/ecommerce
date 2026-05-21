@@ -59,23 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
     btnLogin.addEventListener('click',  () => setMode('login'));
     btnSignup.addEventListener('click', () => setMode('signup'));
 
-    const LOGIN_MUTATION = `
-        mutation Login($email: String!, $password: String!) {
-            login(email: $email, password: $password) {
-                token
-                user { id email fullName }
-            }
-        }
-    `;
-
-    const REGISTER_MUTATION = `
-        mutation Register($email: String!, $password: String!, $fullName: String!) {
-            register(email: $email, password: $password, fullName: $fullName) {
-                token
-                user { id email fullName }
-            }
-        }
-    `;
+    const LOGIN_ENDPOINT = '/sessions';
+    const REGISTER_ENDPOINT = '/profiles';
 
     document.getElementById('auth-form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -95,13 +80,13 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             let data;
             if (mode === 'login') {
-                data = await sgGql(LOGIN_MUTATION, { email, password });
-                const { token, user } = data.login;
-                sgSetAuth(token, user);
+                data = await sgApi(LOGIN_ENDPOINT, { method: 'POST', body: { email, password } });
+                const { token, profile } = data;
+                sgSetAuth(token, profile);
             } else {
-                data = await sgGql(REGISTER_MUTATION, { email, password, fullName });
-                const { token, user } = data.register;
-                sgSetAuth(token, user);
+                data = await sgApi(REGISTER_ENDPOINT, { method: 'POST', body: { email, password, full_name: fullName } });
+                const { token, profile } = data;
+                sgSetAuth(token, profile);
             }
             window.location.replace('../home/index.html');
         } catch (err) {

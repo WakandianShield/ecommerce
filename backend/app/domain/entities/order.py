@@ -1,25 +1,36 @@
-from dataclasses import dataclass, field
-from datetime import datetime
-from typing import List
+from dataclasses import dataclass
+from typing import List, Optional
 
 
-@dataclass
+@dataclass(frozen=True)
 class OrderItem:
     id: str
-    order_id: str
-    product_name: str
-    quantity: int
+    product_id: Optional[str]
+    name: str
     unit_price_cents: int
-    image_url: str
+    quantity: int
 
 
-@dataclass
+@dataclass(frozen=True)
 class Order:
     id: str
     profile_id: str
     status: str
-    shipping_address: str
     total_cents: int
-    items: List[OrderItem] = field(default_factory=list)
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    shipping_address: str
+    items: List[OrderItem]
+
+
+@dataclass(frozen=True)
+class OrderItemCreate:
+    product_id: Optional[str]
+    name: str
+    unit_price_cents: int
+    quantity: int
+
+
+@dataclass(frozen=True)
+class OrderCreate:
+    profile_id: str
+    shipping_address: str
+    items: List[OrderItemCreate]

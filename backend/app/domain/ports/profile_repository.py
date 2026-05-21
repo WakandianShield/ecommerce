@@ -1,15 +1,17 @@
-from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Protocol, Optional
 
-from app.domain.entities.profile import Profile
+from app.domain.entities.profile import Profile, ProfileAuth
 
 
-class ProfileRepository(ABC):
-    @abstractmethod
-    def get_by_id(self, profile_id: str) -> Optional[Profile]: ...
+class ProfileRepository(Protocol):
+    def get_by_id(self, profile_id: str) -> Optional[Profile]:
+        ...
 
-    @abstractmethod
-    def get_by_email(self, email: str) -> Optional[Profile]: ...
+    def get_by_email(self, email: str) -> Optional[Profile]:
+        ...
 
-    @abstractmethod
-    def save(self, profile: Profile) -> Profile: ...
+    def get_auth_by_email(self, email: str) -> Optional[ProfileAuth]:
+        ...
+
+    def create(self, full_name: str, email: str, password_hash: str) -> Profile:
+        ...

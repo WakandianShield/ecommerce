@@ -1,22 +1,12 @@
-from contextlib import asynccontextmanager
-from typing import Optional
-
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from strawberry.fastapi import GraphQLRouter
 
-from app.adapters.graphql.schema import schema
-from app.infrastructure.auth.jwt_handler import decode_access_token
-from app.infrastructure.database.connection import SessionLocal, create_tables
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    create_tables()
-    yield
+from app.adapters.api.routers import orders, products, profiles, sessions
+from app.infrastructure.database import models as _models
+from app.infrastructure.database.connection import init_db
 
 
-app = FastAPI(title="E-Commerce API", lifespan=lifespan)
+app = FastAPI(title="E-Commerce API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,19 +17,17 @@ app.add_middleware(
 )
 
 
-async def get_context(request: Request) -> dict:
-    db = SessionLocal()
-    profile_id: Optional[str] = None
-
-    auth_header = request.headers.get("Authorization", "")
-    if auth_header.startswith("Bearer "):
-        token = auth_header[7:]
-        payload = decode_access_token(token)
-        if payload:
-            profile_id = payload.get("sub")
-
-    return {"db": db, "profile_id": profile_id}
+@app.on_event("startup")
+def on_startup():
+    init_db()
 
 
-graphql_app = GraphQLRouter(schema, context_getter=get_context)
-app.include_router(graphql_app, prefix="/graphql")
+app.include_router(products.router)
+app.include_router(profiles.router)
+app.include_router(sessions.router)
+app.include_router(orders.router)
+
+
+@app.get("/")
+def root():
+    return {"status": "ok"}

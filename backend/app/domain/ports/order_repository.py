@@ -1,15 +1,17 @@
-from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Protocol, List, Optional
 
-from app.domain.entities.order import Order
+from app.domain.entities.order import Order, OrderCreate
 
 
-class OrderRepository(ABC):
-    @abstractmethod
-    def get_by_id(self, order_id: str) -> Optional[Order]: ...
+class OrderRepository(Protocol):
+    def create(self, data: OrderCreate) -> Order:
+        ...
 
-    @abstractmethod
-    def get_by_profile(self, profile_id: str) -> List[Order]: ...
+    def list_for_profile(self, profile_id: str) -> List[Order]:
+        ...
 
-    @abstractmethod
-    def save(self, order: Order) -> Order: ...
+    def get_for_profile(self, profile_id: str, order_id: str) -> Optional[Order]:
+        ...
+
+    def update_status(self, profile_id: str, order_id: str, status: str) -> Optional[Order]:
+        ...

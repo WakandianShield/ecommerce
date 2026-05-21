@@ -111,24 +111,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     const city     = document.getElementById('city').value;
                     const shipping = `${address}, ${city}, ${state}`;
 
-                    const CREATE_ORDER = `
-                        mutation CreateOrder($items: [OrderItemInput!]!, $shippingAddress: String!, $totalCents: Int!) {
-                            createOrderFromItems(items: $items, shippingAddress: $shippingAddress, totalCents: $totalCents) {
-                                id
-                                status
-                                totalCents
-                            }
-                        }
-                    `;
-
-                    await sgGql(CREATE_ORDER, {
-                        items: items.map(i => ({
-                            name:       i.name,
-                            priceCents: Math.round(Number(i.price) * 100),
-                            quantity:   Number(i.qty) || 1,
-                        })),
-                        shippingAddress: shipping,
-                        totalCents:      Math.round(total * 100),
+                    await sgApi('/orders', {
+                        method: 'POST',
+                        body: {
+                            shipping_address: shipping,
+                            items: items.map(i => ({
+                                name: i.name,
+                                unit_price_cents: Math.round(Number(i.price) * 100),
+                                quantity: Number(i.qty) || 1,
+                            })),
+                        },
                     });
                 }
             }

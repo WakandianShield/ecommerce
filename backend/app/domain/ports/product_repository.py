@@ -1,18 +1,20 @@
-from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Protocol, List, Optional
 
-from app.domain.entities.product import Product
+from app.domain.entities.product import Product, ProductCreate, ProductUpdate
 
 
-class ProductRepository(ABC):
-    @abstractmethod
-    def get_all(self) -> List[Product]: ...
+class ProductRepository(Protocol):
+    def list(self) -> List[Product]:
+        ...
 
-    @abstractmethod
-    def get_by_id(self, product_id: str) -> Optional[Product]: ...
+    def get(self, product_id: str) -> Optional[Product]:
+        ...
 
-    @abstractmethod
-    def get_by_category(self, category: str) -> List[Product]: ...
+    def create(self, data: ProductCreate) -> Product:
+        ...
 
-    @abstractmethod
-    def save(self, product: Product) -> Product: ...
+    def update(self, product_id: str, data: ProductUpdate) -> Optional[Product]:
+        ...
+
+    def delete(self, product_id: str) -> bool:
+        ...
