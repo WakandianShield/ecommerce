@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHECKOUT | SANTIAGO GALLARDO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Plus+Jakarta+Sans:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="checkout.css">
+    <link rel="icon" href="../media/logo.png" type="image/png">
+</head>
+<body>
+
+    <nav>
+        <a href="../home/index.html" class="logo-wrapper">
+            <img class="logo" src="../media/logo.png" alt="Logo">
+        </a>
+    </nav>
+
+    <div class="checkout-wrapper">
+        <img src="../media/hero.jpg" alt="Background" class="bg-blur">
+        <div class="hero-overlay"></div>
+
+        <main class="checkout-card">
+            <div class="glass-shimmer"></div>
+            
+            <div class="checkout-header">
+                <h1>Finalizar Pago</h1>
+                <p>Completa tus datos de envío y pago</p>
+            </div>
+            <div class="checkout-grid">
+                <section class="form-panel">
+                    <form id="checkout-form">
+                        <!-- Datos de Envío -->
+                        <div class="input-group">
+                            <label for="address">Dirección de Envío</label>
+                            <input type="text" id="address" placeholder="Calle, número y colonia" required>
+                        </div>
+
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="state">Estado</label>
+                                <select id="state" required>
+                                    <option value="" disabled selected>Selecciona</option>
+                                    <option value="Jalisco">Jalisco</option>
+                                    <option value="CDMX">CDMX</option>
+                                    <option value="Nuevo León">Nuevo León</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="city">Ciudad</label>
+                                <select id="city" required disabled>
+                                    <option value="" disabled selected>Ciudad</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Datos de Tarjeta -->
+                        <div class="input-group">
+                            <label for="card-name">Nombre del Titular</label>
+                            <input type="text" id="card-name" placeholder="Como aparece en la tarjeta" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="card-number">Número de Tarjeta</label>
+                            <input type="text" id="card-number" maxlength="19" placeholder="0000 0000 0000 0000" required>
+                        </div>
+
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="expiry">Expiración</label>
+                                <input type="text" id="expiry" maxlength="5" placeholder="MM/AA" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="cvv">CVV</label>
+                                <input type="password" id="cvv" maxlength="4" placeholder="•••" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary" id="submit-btn">Confirmar Pago</button>
+                    </form>
+                </section>
+
+                <section class="order-summary order-panel" aria-live="polite">
+                    <h2>Tu pedido</h2>
+                    <div class="order-items" id="orderItems">
+                        <p class="order-empty">No se encontraron productos del carrito.</p>
+                    </div>
+                    <div class="order-total">
+                        <span>Total a pagar</span>
+                        <strong id="orderTotal">$0</strong>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="../auth.js"></script>
+    <script src="checkout.js"></script>
+</body>
+</html>
