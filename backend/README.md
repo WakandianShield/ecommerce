@@ -4,11 +4,6 @@ Backend simple en FastAPI con Postgres y arquitectura hexagonal.
 
 ## Estructura de carpetas
 
-Este backend esta organizado con arquitectura hexagonal. La idea principal es separar el negocio de los detalles externos, como la API, la base de datos o la seguridad. Asi el centro de la aplicacion puede crecer sin depender directamente de FastAPI, Postgres o JWT.
-
-backend/
-- Carpeta raiz del backend. Aqui viven la configuracion del proyecto, la lista de dependencias, el script para correr la app y esta documentacion.
-
 backend/app/
 - Contiene el codigo principal de la aplicacion. Desde aqui se arma FastAPI, se conectan las rutas, se inicializa la base de datos y se unen las capas internas del sistema.
 
