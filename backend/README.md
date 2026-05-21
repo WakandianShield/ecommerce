@@ -2,76 +2,51 @@
 
 Backend simple en FastAPI con Postgres y arquitectura hexagonal.
 
-Desglose de carpetas y archivos (lenguaje natural):
+## Estructura de carpetas
+
+Este backend esta organizado con arquitectura hexagonal. La idea principal es separar el negocio de los detalles externos, como la API, la base de datos o la seguridad. Asi el centro de la aplicacion puede crecer sin depender directamente de FastAPI, Postgres o JWT.
 
 backend/
-- backend/.env: aqui pones la direccion de la base de datos y la llave de acceso del servidor.
-- backend/run.cmd: prepara el entorno, instala lo necesario y levanta el servidor.
-- backend/requirements.txt: lista corta de paquetes que se instalan.
-- backend/README.md: esta guia.
+- Carpeta raiz del backend. Aqui viven la configuracion del proyecto, la lista de dependencias, el script para correr la app y esta documentacion.
 
 backend/app/
-- backend/app/__init__.py: indica que esta carpeta es parte del proyecto.
-- backend/app/main.py: punto de inicio; crea tablas, une las rutas y enciende el servidor.
+- Contiene el codigo principal de la aplicacion. Desde aqui se arma FastAPI, se conectan las rutas, se inicializa la base de datos y se unen las capas internas del sistema.
 
 backend/app/domain/
-- backend/app/domain/__init__.py: indica que esta carpeta es parte del proyecto.
-- backend/app/domain/errors.py: mensajes de error del negocio en palabras simples.
+- Es el centro del negocio. Aqui se define que es un producto, un perfil y una orden desde el punto de vista de la tienda, junto con errores propios del dominio. Esta capa no deberia depender de FastAPI ni de Postgres.
 
 backend/app/domain/entities/
-- backend/app/domain/entities/__init__.py: indica que esta carpeta es parte del proyecto.
-- backend/app/domain/entities/product.py: datos de producto y formas de crearlo o editarlo.
-- backend/app/domain/entities/profile.py: datos del perfil del cliente.
-- backend/app/domain/entities/order.py: datos de la orden y sus productos.
+- Guarda las entidades principales del e-commerce. Una entidad representa un concepto importante del negocio, por ejemplo productos, clientes y ordenes.
 
 backend/app/domain/ports/
-- backend/app/domain/ports/__init__.py: indica que esta carpeta es parte del proyecto.
-- backend/app/domain/ports/product_repository.py: dice como se guardan y leen productos.
-- backend/app/domain/ports/profile_repository.py: dice como se guardan y leen perfiles.
-- backend/app/domain/ports/order_repository.py: dice como se guardan y leen ordenes.
+- Define contratos que el dominio necesita para comunicarse con el exterior. Por ejemplo, aqui se dice que operaciones debe tener un repositorio de productos, perfiles u ordenes, sin importar todavia si se guardan en Postgres, memoria u otro sistema.
 
 backend/app/application/
-- backend/app/application/__init__.py: indica que esta carpeta es parte del proyecto.
+- Coordina los casos de uso de la aplicacion. Esta capa toma las entidades del dominio y las usa para resolver acciones concretas como registrar usuarios, iniciar sesion, administrar productos o crear ordenes.
 
 backend/app/application/use_cases/
-- backend/app/application/use_cases/__init__.py: indica que esta carpeta es parte del proyecto.
-- backend/app/application/use_cases/product_service.py: reglas basicas de productos.
-- backend/app/application/use_cases/profile_service.py: reglas de registro.
-- backend/app/application/use_cases/session_service.py: reglas para iniciar sesion.
-- backend/app/application/use_cases/order_service.py: reglas de ordenes.
+- Contiene los servicios de aplicacion. Cada servicio agrupa reglas y pasos para una parte del sistema: productos, perfiles, sesiones y ordenes.
 
 backend/app/infrastructure/
-- backend/app/infrastructure/__init__.py: indica que esta carpeta es parte del proyecto.
+- Contiene detalles tecnicos externos al negocio. Aqui esta lo necesario para conectarse a la base de datos, leer configuracion, manejar contrasenas y generar tokens.
 
 backend/app/infrastructure/config/
-- backend/app/infrastructure/config/__init__.py: indica que esta carpeta es parte del proyecto.
-- backend/app/infrastructure/config/settings.py: lee el .env y entrega la configuracion.
+- Se encarga de cargar la configuracion del backend, como variables de entorno y valores necesarios para conectar servicios.
 
 backend/app/infrastructure/database/
-- backend/app/infrastructure/database/__init__.py: indica que esta carpeta es parte del proyecto.
-- backend/app/infrastructure/database/connection.py: abre la base y crea tablas.
-- backend/app/infrastructure/database/models.py: describe como se guardan los datos en la base.
-- backend/app/infrastructure/database/repositories.py: pasos reales para guardar y leer datos.
+- Contiene la implementacion real de persistencia. Aqui se define la conexion con Postgres, las tablas/modelos de base de datos y los repositorios que guardan y consultan informacion.
 
 backend/app/infrastructure/security/
-- backend/app/infrastructure/security/__init__.py: indica que esta carpeta es parte del proyecto.
-- backend/app/infrastructure/security/password_hasher.py: guarda y revisa contrasenas de forma segura.
-- backend/app/infrastructure/security/token_service.py: crea y lee la llave de acceso del usuario.
+- Agrupa la logica tecnica de seguridad. Sirve para proteger contrasenas, validar credenciales y crear o leer tokens de acceso.
 
 backend/app/adapters/
-- backend/app/adapters/__init__.py: indica que esta carpeta es parte del proyecto.
+- Contiene las entradas y salidas de la aplicacion. En este proyecto el adaptador principal es la API HTTP, pero esta capa podria tener otros adaptadores en el futuro.
 
 backend/app/adapters/api/
-- backend/app/adapters/api/__init__.py: indica que esta carpeta es parte del proyecto.
-- backend/app/adapters/api/schemas.py: define el formato de lo que entra y sale.
-- backend/app/adapters/api/dependencies.py: prepara la base y el usuario actual.
+- Traduce entre HTTP/FastAPI y los casos de uso internos. Aqui se definen los formatos de entrada y salida, dependencias compartidas y la conexion entre rutas y servicios.
 
 backend/app/adapters/api/routers/
-- backend/app/adapters/api/routers/__init__.py: indica que esta carpeta es parte del proyecto.
-- backend/app/adapters/api/routers/products.py: rutas de productos.
-- backend/app/adapters/api/routers/profiles.py: rutas de registro y perfil.
-- backend/app/adapters/api/routers/sessions.py: rutas de inicio de sesion.
-- backend/app/adapters/api/routers/orders.py: rutas de ordenes.
+- Agrupa las rutas REST por tema. Hay rutas para productos, perfiles, sesiones y ordenes, cada una llamando a los casos de uso correspondientes.
 
 ## Setup
 1. Asegura que Postgres este corriendo y exista la base de datos.
