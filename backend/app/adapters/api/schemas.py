@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 class ProductCreateIn(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     description: Optional[str] = None
-    price_cents: int = Field(ge=0)
+    price_cents: int = Field(ge=1)
     stock: int = Field(ge=0)
     category: Optional[str] = None
     image_url: Optional[str] = None

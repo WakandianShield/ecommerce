@@ -17,8 +17,8 @@ class ProductService:
         return product
 
     def create_product(self, data: ProductCreate):
-        if data.price_cents < 0:
-            raise ValidationError("Price must be zero or positive")
+        if data.price_cents <= 0:
+            raise ValidationError("Price must be greater than zero")
         if data.stock < 0:
             raise ValidationError("Stock must be zero or positive")
         return self._repo.create(data)
