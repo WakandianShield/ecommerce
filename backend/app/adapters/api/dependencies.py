@@ -26,8 +26,10 @@ def get_current_profile(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing token")
     token_service = TokenService()
     try:
-        payload = token_service.decode_access_token(credentials.credentials)
+        payload = token_service.decode_token(credentials.credentials)
     except Exception:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    if payload.get("type") != "access":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     profile_id = payload.get("sub")
     if not profile_id:
@@ -37,3 +39,12 @@ def get_current_profile(
     if not profile:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Profile not found")
     return profile
+
+
+def require_roles(*roles: str):
+    def dependency(profile=Depends(get_current_profile)):
+        if profile.role not in roles:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+        return profile
+
+    return dependency

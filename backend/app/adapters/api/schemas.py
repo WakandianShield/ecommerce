@@ -48,6 +48,7 @@ class ProfileOut(BaseModel):
     id: str
     full_name: str
     email: EmailStr
+    role: str
 
 
 class SessionIn(BaseModel):
@@ -56,8 +57,14 @@ class SessionIn(BaseModel):
 
 
 class SessionOut(BaseModel):
-    token: str
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
     profile: ProfileOut
+
+
+class RefreshTokenIn(BaseModel):
+    refresh_token: str
 
 
 class OrderItemIn(BaseModel):

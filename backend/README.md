@@ -51,24 +51,44 @@ backend/app/adapters/api/routers/
 
 Ejemplo de .env:
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ecom
+JWT_SECRET=dev-secret-change-me
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+REFRESH_TOKEN_EXPIRE_DAYS=30
 
 Comando:
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 ## Endpoints REST
-- POST /profiles (registro, retorna token)
-- POST /sessions (login, retorna token)
+- POST /profiles (registro, retorna tokens)
+- POST /sessions (login, retorna tokens)
+- POST /sessions/refresh (refresh token)
+- POST /sessions/logout (revoca refresh token)
 - GET /profiles/me
 - GET /products
-- POST /products
+- POST /products (admin)
+- POST /products/{id}/image (admin, multipart/form-data)
 - GET /products/{id}
-- PUT /products/{id}
-- DELETE /products/{id}
+- PUT /products/{id} (admin)
+- DELETE /products/{id} (admin)
 - POST /orders (auth requerida)
 - GET /orders (auth requerida)
 - GET /orders/{id} (auth requerida)
-- PUT /orders/{id}/status (auth requerida)
+- GET /orders/admin (admin u operador)
+- PUT /orders/{id}/status (admin u operador)
+
+## WebSocket
+- WS /realtime/chat
+	- Param opcional: session_id
+	- Mensaje de entrada: texto plano
+	- Respuesta: JSON con type=session o type=message
+
+## Chat (admin)
+- GET /realtime/sessions (admin u operador)
+- GET /realtime/sessions/{session_id} (admin u operador)
 
 ## Notas
-- Usa Authorization: Bearer <token> para endpoints protegidos.
+- Usa Authorization: Bearer <access_token> para endpoints protegidos.
+- Los roles disponibles son: customer, admin, operator.
 - CORS esta abierto para facilitar el uso con el frontend local.
+- Si ya existia una base de datos, agrega la columna profiles.role y la tabla refresh_tokens (o recrea la BD en desarrollo).
+- Las imagenes se guardan en backend/uploads y se sirven en /media.

@@ -13,6 +13,7 @@ class Settings:
     jwt_secret: str
     jwt_algorithm: str
     access_token_minutes: int
+    refresh_token_days: int
 
 
 _settings: Settings | None = None
@@ -29,5 +30,6 @@ def get_settings() -> Settings:
             jwt_secret=os.getenv("JWT_SECRET", "dev-secret-change-me"),
             jwt_algorithm=os.getenv("JWT_ALGORITHM", "HS256"),
             access_token_minutes=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "20160")),
+            refresh_token_days=int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30")),
         )
     return _settings

@@ -13,5 +13,5 @@ class ProfileRepository(Protocol):
     def get_auth_by_email(self, email: str) -> Optional[ProfileAuth]:
         ...
 
-    def create(self, full_name: str, email: str, password_hash: str) -> Profile:
+    def create(self, full_name: str, email: str, password_hash: str, role: str) -> Profile:
         ...

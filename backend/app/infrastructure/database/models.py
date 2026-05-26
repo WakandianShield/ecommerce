@@ -27,6 +27,17 @@ class ProfileModel(Base):
     full_name = Column(String(120), nullable=False)
     email = Column(String(160), nullable=False, unique=True, index=True)
     password_hash = Column(String(255), nullable=False)
+    role = Column(String(40), nullable=False, default="customer")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class RefreshTokenModel(Base):
+    __tablename__ = "refresh_tokens"
+
+    id = Column(String(36), primary_key=True)
+    profile_id = Column(String(36), ForeignKey("profiles.id"), nullable=False, index=True)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    revoked_at = Column(DateTime(timezone=True))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 

@@ -37,6 +37,9 @@ class OrderService:
     def list_orders(self, profile_id: str):
         return self._repo.list_for_profile(profile_id)
 
+    def list_all_orders(self):
+        return self._repo.list_all()
+
     def get_order(self, profile_id: str, order_id: str):
         order = self._repo.get_for_profile(profile_id, order_id)
         if not order:
@@ -47,6 +50,14 @@ class OrderService:
         if not status.strip():
             raise ValidationError("Status is required")
         order = self._repo.update_status(profile_id, order_id, status)
+        if not order:
+            raise NotFoundError("Order not found")
+        return order
+
+    def update_status_any(self, order_id: str, status: str):
+        if not status.strip():
+            raise ValidationError("Status is required")
+        order = self._repo.update_status_any(order_id, status)
         if not order:
             raise NotFoundError("Order not found")
         return order

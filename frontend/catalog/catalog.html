@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CATALOGO | SANTIAGO GALLARDO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="catalog.css">
+    <link rel="icon" href="../media/logo.png" type="image/png">
+</head>
+<body>
+    <div class="ambient"></div>
+
+    <nav class="topbar">
+        <a class="brand" href="../home/index.html">
+            <img class="brand-logo" src="../media/logo.png" alt="Logo">
+            <div>
+                <p class="brand-title">Santiago Gallardo</p>
+                <p class="brand-sub">Coleccion sonora</p>
+            </div>
+        </a>
+        <div class="nav">
+            <a href="../home/index.html">Inicio</a>
+            <a class="active" href="catalog.html">Catalogo</a>
+            <a href="../orders/orders.html">Mis compras</a>
+            <a href="../cart/cart.html">Carrito <span id="cartCount" class="pill">0</span></a>
+            <a href="../chat/chat.html">Chat</a>
+            <a href="../login/login.html" aria-label="Perfil">Perfil</a>
+        </div>
+    </nav>
+
+    <main class="page">
+        <section class="hero">
+            <div class="hero-card">
+                <div>
+                    <p class="eyebrow">Catalogo vivo</p>
+                    <h1>Vinilos y colecciones listas para sonar.</h1>
+                    <p class="hero-copy">Explora el catalogo completo, filtra por categoria y guarda tus favoritos en el carrito.</p>
+                </div>
+                <div class="controls">
+                    <input id="searchInput" type="search" placeholder="Buscar por nombre, genero o descripcion">
+                    <select id="categoryFilter">
+                        <option value="">Todas las categorias</option>
+                    </select>
+                    <button class="btn btn-ghost" type="button" id="clearFilters">Limpiar</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="catalog-grid" id="catalogGrid">
+            <div class="state-card">Cargando catalogo...</div>
+        </section>
+    </main>
+
+    <script src="../auth.js"></script>
+    <script src="catalog.js"></script>
+</body>
+</html>

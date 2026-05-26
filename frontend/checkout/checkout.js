@@ -99,29 +99,40 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.textContent = 'Procesando…';
 
         try {
-            if (typeof sgGetToken === 'function' && sgGetToken()) {
-                const stored = localStorage.getItem('sg_cart_summary');
-                if (stored) {
-                    const data = JSON.parse(stored);
-                    const items = Array.isArray(data.items) ? data.items : [];
-                    const total = Number(data.total) || 0;
+            if (typeof sgGetToken === 'function') {
+                const token = await sgGetToken();
+                if (token) {
+                    const stored = localStorage.getItem('sg_cart_summary');
+                    if (stored) {
+                        const data = JSON.parse(stored);
+                        const items = Array.isArray(data.items) ? data.items : [];
 
-                    const address  = document.getElementById('address').value.trim();
-                    const state    = document.getElementById('state').value;
-                    const city     = document.getElementById('city').value;
-                    const shipping = `${address}, ${city}, ${state}`;
+                        const address  = document.getElementById('address').value.trim();
+                        const state    = document.getElementById('state').value;
+                        const city     = document.getElementById('city').value;
+                        const shipping = `${address}, ${city}, ${state}`;
 
-                    await sgApi('/orders', {
-                        method: 'POST',
-                        body: {
-                            shipping_address: shipping,
-                            items: items.map(i => ({
+                        const orderItems = items
+                            .filter(i => i.product_id)
+                            .map(i => ({
+                                product_id: i.product_id,
                                 name: i.name,
                                 unit_price_cents: Math.round(Number(i.price) * 100),
                                 quantity: Number(i.qty) || 1,
-                            })),
-                        },
-                    });
+                            }));
+
+                        if (!orderItems.length) {
+                            throw new Error('El carrito no tiene productos validos.');
+                        }
+
+                        await sgApi('/orders', {
+                            method: 'POST',
+                            body: {
+                                shipping_address: shipping,
+                                items: orderItems,
+                            },
+                        });
+                    }
                 }
             }
         } catch (err) {

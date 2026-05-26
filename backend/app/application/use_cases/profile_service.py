@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from app.domain.entities.profile import Profile
+from app.domain.entities.profile import Profile, ROLE_CUSTOMER
 from app.domain.errors import ValidationError
 from app.domain.ports.profile_repository import ProfileRepository
 
@@ -26,4 +26,9 @@ class ProfileService:
         if existing:
             raise ValidationError("Email is already registered")
         password_hash = self._hasher.hash(password)
-        return self._repo.create(full_name=full_name, email=email, password_hash=password_hash)
+        return self._repo.create(
+            full_name=full_name,
+            email=email,
+            password_hash=password_hash,
+            role=ROLE_CUSTOMER,
+        )

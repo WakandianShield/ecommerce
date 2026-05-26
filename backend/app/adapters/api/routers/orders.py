@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.adapters.api.dependencies import get_current_profile, get_db
+from app.adapters.api.dependencies import get_current_profile, get_db, require_roles
 from app.adapters.api.schemas import OrderCreateIn, OrderOut, OrderStatusUpdateIn
 from app.application.use_cases.order_service import OrderService
 from app.domain.entities.order import OrderItemCreate
@@ -20,7 +20,6 @@ def create_order(
 ):
     service = OrderService(SqlAlchemyOrderRepository(db), SqlAlchemyProductRepository(db))
     items = [
-        OrderItemCreate(
             product_id=item.product_id,
             name=item.name,
             unit_price_cents=item.unit_price_cents,
@@ -42,28 +41,40 @@ def list_orders(profile=Depends(get_current_profile), db: Session = Depends(get_
     return [OrderOut.model_validate(order) for order in orders]
 
 
-@router.get("/{order_id}", response_model=OrderOut)
-def get_order(order_id: str, profile=Depends(get_current_profile), db: Session = Depends(get_db)):
+@router.get("/admin", response_model=list[OrderOut])
+def list_all_orders(
+    profile=Depends(require_roles("admin", "operator")),
+    db: Session = Depends(get_db),
+):
     service = OrderService(SqlAlchemyOrderRepository(db), SqlAlchemyProductRepository(db))
-    try:
-        order = service.get_order(profile.id, order_id)
-    except NotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
-    return OrderOut.model_validate(order)
+    orders = service.list_all_orders()
+    return [OrderOut.model_validate(order) for order in orders]
+
+
 
 
 @router.put("/{order_id}/status", response_model=OrderOut)
 def update_status(
     order_id: str,
     payload: OrderStatusUpdateIn,
-    profile=Depends(get_current_profile),
+    profile=Depends(require_roles("admin", "operator")),
     db: Session = Depends(get_db),
 ):
     service = OrderService(SqlAlchemyOrderRepository(db), SqlAlchemyProductRepository(db))
     try:
-        order = service.update_status(profile.id, order_id, payload.status)
+        order = service.update_status_any(order_id, payload.status)
     except ValidationError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except NotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    return OrderOut.model_validate(order)
+
+
+@router.get("/{order_id}", response_model=OrderOut)
+def get_order(order_id: str, profile=Depends(get_current_profile), db: Session = Depends(get_db)):
+    service = OrderService(SqlAlchemyOrderRepository(db), SqlAlchemyProductRepository(db))
+    try:
+        order = service.get_order(profile.id, order_id)
     except NotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
     return OrderOut.model_validate(order)

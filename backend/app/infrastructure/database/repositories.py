@@ -1,13 +1,20 @@
 from typing import List, Optional
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.domain.entities.order import Order, OrderCreate, OrderItem
 from app.domain.entities.product import Product, ProductCreate, ProductUpdate
 from app.domain.entities.profile import Profile, ProfileAuth
-from app.infrastructure.database.models import OrderItemModel, OrderModel, ProductModel, ProfileModel
+from app.domain.entities.refresh_token import RefreshToken
+from app.infrastructure.database.models import (
+    OrderItemModel,
+    OrderModel,
+    ProductModel,
+    ProfileModel,
+    RefreshTokenModel,
+)
 
 
 class SqlAlchemyProductRepository:
@@ -104,15 +111,17 @@ class SqlAlchemyProfileRepository:
             id=model.id,
             full_name=model.full_name,
             email=model.email,
+            role=model.role,
             password_hash=model.password_hash,
         )
 
-    def create(self, full_name: str, email: str, password_hash: str) -> Profile:
+    def create(self, full_name: str, email: str, password_hash: str, role: str) -> Profile:
         model = ProfileModel(
             id=str(uuid.uuid4()),
             full_name=full_name,
             email=email,
             password_hash=password_hash,
+            role=role,
         )
         self._session.add(model)
         self._session.commit()
@@ -121,7 +130,45 @@ class SqlAlchemyProfileRepository:
 
     @staticmethod
     def _to_entity(model: ProfileModel) -> Profile:
-        return Profile(id=model.id, full_name=model.full_name, email=model.email)
+        return Profile(id=model.id, full_name=model.full_name, email=model.email, role=model.role)
+
+
+class SqlAlchemyRefreshTokenRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def create(self, profile_id: str, token_id: str, expires_at):
+        model = RefreshTokenModel(
+            id=token_id,
+            profile_id=profile_id,
+            expires_at=expires_at,
+        )
+        self._session.add(model)
+        self._session.commit()
+        self._session.refresh(model)
+        return self._to_entity(model)
+
+    def get(self, token_id: str) -> Optional[RefreshToken]:
+        model = self._session.get(RefreshTokenModel, token_id)
+        return self._to_entity(model) if model else None
+
+    def revoke(self, token_id: str) -> bool:
+        model = self._session.get(RefreshTokenModel, token_id)
+        if not model:
+            return False
+        model.revoked_at = func.now()
+        self._session.commit()
+        self._session.refresh(model)
+        return True
+
+    @staticmethod
+    def _to_entity(model: RefreshTokenModel) -> RefreshToken:
+        return RefreshToken(
+            id=model.id,
+            profile_id=model.profile_id,
+            expires_at=model.expires_at,
+            revoked_at=model.revoked_at,
+        )
 
 
 class SqlAlchemyOrderRepository:
@@ -158,14 +205,31 @@ class SqlAlchemyOrderRepository:
         orders = self._session.execute(stmt).scalars().all()
         return [self._to_entity(order) for order in orders]
 
+    def list_all(self) -> List[Order]:
+        orders = self._session.execute(select(OrderModel)).scalars().all()
+        return [self._to_entity(order) for order in orders]
+
     def get_for_profile(self, profile_id: str, order_id: str) -> Optional[Order]:
         stmt = select(OrderModel).where(OrderModel.profile_id == profile_id, OrderModel.id == order_id)
         order = self._session.execute(stmt).scalars().first()
         return self._to_entity(order) if order else None
 
+    def get(self, order_id: str) -> Optional[Order]:
+        order = self._session.get(OrderModel, order_id)
+        return self._to_entity(order) if order else None
+
     def update_status(self, profile_id: str, order_id: str, status: str) -> Optional[Order]:
         stmt = select(OrderModel).where(OrderModel.profile_id == profile_id, OrderModel.id == order_id)
         order = self._session.execute(stmt).scalars().first()
+        if not order:
+            return None
+        order.status = status
+        self._session.commit()
+        self._session.refresh(order)
+        return self._to_entity(order)
+
+    def update_status_any(self, order_id: str, status: str) -> Optional[Order]:
+        order = self._session.get(OrderModel, order_id)
         if not order:
             return None
         order.status = status

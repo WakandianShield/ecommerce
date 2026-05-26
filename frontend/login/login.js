@@ -1,7 +1,10 @@
-document.addEventListener('DOMContentLoaded', () => {
-    if (typeof sgGetToken === 'function' && sgGetToken()) {
-        window.location.replace('../home/index.html');
-        return;
+document.addEventListener('DOMContentLoaded', async () => {
+    if (typeof sgGetToken === 'function') {
+        const token = await sgGetToken();
+        if (token) {
+            window.location.replace('../home/index.html');
+            return;
+        }
     }
 
     const btnLogin  = document.getElementById('btn-login');
@@ -81,13 +84,11 @@ document.addEventListener('DOMContentLoaded', () => {
             let data;
             if (mode === 'login') {
                 data = await sgApi(LOGIN_ENDPOINT, { method: 'POST', body: { email, password } });
-                const { token, profile } = data;
-                sgSetAuth(token, profile);
             } else {
                 data = await sgApi(REGISTER_ENDPOINT, { method: 'POST', body: { email, password, full_name: fullName } });
-                const { token, profile } = data;
-                sgSetAuth(token, profile);
             }
+            const { access_token, refresh_token, profile } = data;
+            sgSetAuth(access_token, refresh_token, profile);
             window.location.replace('../home/index.html');
         } catch (err) {
             showError(err.message || 'Error al conectar con el servidor.');

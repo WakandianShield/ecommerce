@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BACKOFFICE | SANTIAGO GALLARDO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+    <link rel="icon" href="../media/logo.png" type="image/png">
+</head>
+<body>
+    <div class="ambient"></div>
+
+    <header class="admin-topbar">
+        <div class="brand">
+            <img class="brand-logo" src="../media/logo.png" alt="Logo">
+            <div>
+                <p class="brand-title">Backoffice</p>
+                <p class="brand-sub">Gestion administrativa</p>
+            </div>
+        </div>
+        <div class="admin-actions">
+            <span id="adminName" class="admin-name"></span>
+            <a class="btn ghost" href="../home/index.html">Volver al sitio</a>
+        </div>
+    </header>
+
+    <div class="admin-shell">
+        <aside class="admin-nav">
+            <button class="nav-btn active" data-tab="products">Productos</button>
+            <button class="nav-btn" data-tab="orders">Ordenes</button>
+            <button class="nav-btn" data-tab="chat">Chat</button>
+        </aside>
+
+        <main class="admin-content">
+            <section class="section active" data-section="products">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow">Catalogo</p>
+                        <h2>Gestion de productos</h2>
+                    </div>
+                </div>
+
+                <div class="grid two">
+                    <form id="productForm" class="panel">
+                        <input type="hidden" id="productId">
+                        <div class="field">
+                            <label for="productName">Nombre</label>
+                            <input id="productName" type="text" required>
+                        </div>
+                        <div class="field">
+                            <label for="productDescription">Descripcion</label>
+                            <textarea id="productDescription" rows="3"></textarea>
+                        </div>
+                        <div class="field">
+                            <label for="productCategory">Categoria</label>
+                            <input id="productCategory" type="text">
+                        </div>
+                        <div class="grid two">
+                            <div class="field">
+                                <label for="productPrice">Precio</label>
+                                <input id="productPrice" type="number" step="0.01" min="0" required>
+                            </div>
+                            <div class="field">
+                                <label for="productStock">Stock</label>
+                                <input id="productStock" type="number" step="1" min="0" required>
+                            </div>
+                        </div>
+                        <div class="field switch">
+                            <input id="productActive" type="checkbox" checked>
+                            <label for="productActive">Activo</label>
+                        </div>
+                        <div class="field">
+                            <label for="productImage">Imagen (jpg, png, webp)</label>
+                            <input id="productImage" type="file" accept="image/*">
+                        </div>
+                        <div class="actions">
+                            <button type="submit" class="btn primary">Guardar</button>
+                            <button type="button" class="btn ghost" id="productReset">Limpiar</button>
+                        </div>
+                        <p class="hint">La imagen se sube usando multipart/form-data.</p>
+                    </form>
+
+                    <div class="panel">
+                        <div class="panel-head">
+                            <h3>Productos activos</h3>
+                            <button class="btn ghost" id="refreshProducts">Refrescar</button>
+                        </div>
+                        <div id="productList" class="list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" data-section="orders">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow">Ordenes</p>
+                        <h2>Seguimiento de pedidos</h2>
+                    </div>
+                    <button class="btn ghost" id="refreshOrders">Refrescar</button>
+                </div>
+                <div id="adminOrdersList" class="orders"></div>
+            </section>
+
+            <section class="section" data-section="chat">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow">Conversaciones</p>
+                        <h2>Sesiones de chat</h2>
+                    </div>
+                    <button class="btn ghost" id="refreshChat">Refrescar</button>
+                </div>
+                <div class="grid two">
+                    <div class="panel">
+                        <h3>Sesiones activas</h3>
+                        <div id="chatSessions" class="list"></div>
+                    </div>
+                    <div class="panel">
+                        <h3>Mensajes</h3>
+                        <div id="chatMessages" class="chat-messages"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../auth.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

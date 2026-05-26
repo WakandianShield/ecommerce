@@ -3,9 +3,13 @@ from sqlalchemy.orm import Session
 
 from app.adapters.api.dependencies import get_current_profile, get_db
 from app.adapters.api.schemas import ProfileCreateIn, ProfileOut, SessionOut
+from app.application.use_cases.session_service import SessionService
 from app.application.use_cases.profile_service import ProfileService
 from app.domain.errors import ValidationError
-from app.infrastructure.database.repositories import SqlAlchemyProfileRepository
+from app.infrastructure.database.repositories import (
+    SqlAlchemyProfileRepository,
+    SqlAlchemyRefreshTokenRepository,
+)
 from app.infrastructure.security.password_hasher import PasswordHasher
 from app.infrastructure.security.token_service import TokenService
 
@@ -20,8 +24,18 @@ def register_profile(payload: ProfileCreateIn, db: Session = Depends(get_db)):
         profile = service.register(payload.full_name, payload.email, payload.password)
     except ValidationError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
-    token = TokenService().create_access_token(profile.id)
-    return SessionOut(token=token, profile=ProfileOut.model_validate(profile))
+    session_service = SessionService(
+        SqlAlchemyProfileRepository(db),
+        PasswordHasher(),
+        TokenService(),
+        SqlAlchemyRefreshTokenRepository(db),
+    )
+    access_token, refresh_token = session_service.issue_tokens(profile)
+    return SessionOut(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        profile=ProfileOut.model_validate(profile),
+    )
 
 
 @router.get("/me", response_model=ProfileOut)
