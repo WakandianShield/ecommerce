@@ -194,6 +194,19 @@ nav {
     flex-grow: 1;
 }
 
+.product-stock {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.65);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.product-stock--out {
+    color: #ff7a7a;
+}
+
 .price-action {
     display: flex;
     justify-content: space-between;
@@ -220,6 +233,15 @@ nav {
     cursor: pointer;
     transition: 0.3s;
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+}
+
+.add-cart-btn.is-disabled,
+.add-cart-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    transform: none;
+    filter: none;
+    box-shadow: none;
 }
 
 .add-cart-btn:hover {
@@ -282,6 +304,68 @@ footer {
 #cart-toast.show {
     opacity: 1;
     transform: translateY(0);
+}
+
+.sg-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5, 6, 10, 0.65);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 4000;
+}
+
+.sg-modal.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.sg-modal__card {
+    width: min(380px, 90vw);
+    background: rgba(15, 17, 26, 0.96);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
+    text-align: left;
+}
+
+.sg-modal__title {
+    margin: 0 0 8px;
+    font-family: 'Titan One', cursive;
+    font-size: 1.2rem;
+}
+
+.sg-modal__body {
+    margin: 0 0 18px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.sg-modal__actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.sg-modal__btn {
+    border: none;
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), #355cc9);
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.sg-modal__btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
 }
 
 /* --- Responsive --- */

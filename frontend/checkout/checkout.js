@@ -99,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.textContent = 'Procesando…';
 
         try {
+            let orderCreated = false;
             if (typeof sgGetToken === 'function') {
                 const token = await sgGetToken();
                 if (token) {
@@ -132,15 +133,27 @@ document.addEventListener('DOMContentLoaded', () => {
                                 items: orderItems,
                             },
                         });
+                        orderCreated = true;
                     }
+                } else {
+                    throw new Error('Inicia sesion para finalizar tu pedido.');
                 }
+            } else {
+                throw new Error('No se pudo conectar con el sistema de autenticacion.');
             }
+
+            if (!orderCreated) {
+                throw new Error('No se pudo crear la orden.');
+            }
+
+            localStorage.removeItem('sg_cart_items');
+            localStorage.removeItem('sg_cart_summary');
+            window.location.href = '../result/success.html';
         } catch (err) {
             console.error('Error al guardar la orden:', err);
+            alert(err.message || 'No se pudo crear la orden.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Confirmar Pago';
         }
-
-        localStorage.removeItem('sg_cart_items');
-        localStorage.removeItem('sg_cart_summary');
-        window.location.href = '../result/success.html';
     });
 });

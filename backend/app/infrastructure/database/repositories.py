@@ -8,6 +8,7 @@ from app.domain.entities.order import Order, OrderCreate, OrderItem
 from app.domain.entities.product import Product, ProductCreate, ProductUpdate
 from app.domain.entities.profile import Profile, ProfileAuth
 from app.domain.entities.refresh_token import RefreshToken
+from app.domain.errors import ValidationError
 from app.infrastructure.database.models import (
     OrderItemModel,
     OrderModel,
@@ -66,6 +67,18 @@ class SqlAlchemyProductRepository:
         self._session.commit()
         self._session.refresh(model)
         return self._to_entity(model)
+
+    def decrement_stock(self, product_quantities: dict[str, int]) -> None:
+        for product_id, quantity in product_quantities.items():
+            model = self._session.get(ProductModel, product_id)
+            if not model:
+                raise ValidationError(f"Product not found: {product_id}")
+            if model.stock < quantity:
+                raise ValidationError(
+                    f"Stock insuficiente para {model.name}. Disponible: {model.stock}."
+                )
+            model.stock -= quantity
+        self._session.flush()
 
     def delete(self, product_id: str) -> bool:
         model = self._session.get(ProductModel, product_id)

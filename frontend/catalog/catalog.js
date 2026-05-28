@@ -2,9 +2,9 @@ const grid = document.getElementById('catalogGrid');
 const searchInput = document.getElementById('searchInput');
 const categoryFilter = document.getElementById('categoryFilter');
 const clearBtn = document.getElementById('clearFilters');
-const cartCount = document.getElementById('cartCount');
 
 const CART_KEY = 'sg_cart_items';
+const STOCK_MODAL_ID = 'sg-stock-modal';
 
 let products = [];
 
@@ -22,13 +22,54 @@ function saveCart(items) {
     localStorage.setItem(CART_KEY, JSON.stringify(items));
 }
 
-function updateCartCount() {
-    const cart = getCart();
-    const totalQty = cart.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
-    cartCount.textContent = totalQty;
+function ensureStockModal() {
+    let modal = document.getElementById(STOCK_MODAL_ID);
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.id = STOCK_MODAL_ID;
+    modal.className = 'sg-modal';
+    modal.innerHTML = `
+        <div class="sg-modal__card" role="dialog" aria-modal="true" aria-labelledby="sg-modal-title">
+            <h3 id="sg-modal-title" class="sg-modal__title">Stock insuficiente</h3>
+            <p class="sg-modal__body">No hay stock suficiente para agregar mas unidades.</p>
+            <div class="sg-modal__actions">
+                <button type="button" class="sg-modal__btn" data-action="close">Cerrar</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) hideStockModal();
+    });
+
+    const closeBtn = modal.querySelector('[data-action="close"]');
+    if (closeBtn) closeBtn.addEventListener('click', hideStockModal);
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') hideStockModal();
+    });
+
+    return modal;
+}
+
+function showStockModal({ title, message }) {
+    const modal = ensureStockModal();
+    const titleEl = modal.querySelector('.sg-modal__title');
+    const bodyEl = modal.querySelector('.sg-modal__body');
+    if (titleEl) titleEl.textContent = title;
+    if (bodyEl) bodyEl.textContent = message;
+    modal.classList.add('is-visible');
+}
+
+function hideStockModal() {
+    const modal = document.getElementById(STOCK_MODAL_ID);
+    if (modal) modal.classList.remove('is-visible');
 }
 
 function addToCart(product) {
+    if (!canAddToCart(product)) return;
     const imageUrl = product.image_url
         ? (product.image_url.startsWith('/') ? `${API_BASE}${product.image_url}` : product.image_url)
         : '';
@@ -46,7 +87,31 @@ function addToCart(product) {
         });
     }
     saveCart(cart);
-    updateCartCount();
+}
+
+function canAddToCart(product) {
+    const stockValue = Number(product.stock);
+    const stock = Number.isFinite(stockValue) ? stockValue : 0;
+    const cart = getCart();
+    const existing = cart.find((item) => item.product_id === product.id);
+    const currentQty = existing ? Number(existing.qty) || 0 : 0;
+
+    if (stock <= 0) {
+        showStockModal({
+            title: 'Stock insuficiente',
+            message: 'Este producto esta agotado por ahora.',
+        });
+        return false;
+    }
+
+    if (currentQty + 1 > stock) {
+        showStockModal({
+            title: 'Stock insuficiente',
+            message: `Solo hay ${stock} unidades disponibles.`,
+        });
+        return false;
+    }
+    return true;
 }
 
 function renderProducts(list) {
@@ -56,31 +121,30 @@ function renderProducts(list) {
     }
 
     grid.innerHTML = list.map((product) => {
+        const stockValue = Number(product.stock);
+        const stock = Number.isFinite(stockValue) ? stockValue : 0;
         const imageUrl = product.image_url
             ? (product.image_url.startsWith('/') ? `${API_BASE}${product.image_url}` : product.image_url)
             : '';
         const hasImage = Boolean(imageUrl);
-        const stock = Number(product.stock) || 0;
         const disabled = stock <= 0;
         const description = product.description
             ? product.description.replace(/\n/g, '<br>')
             : 'Sin descripcion.';
         return `
-            <article class="product-card">
-                <div class="product-media">
-                    ${hasImage ? `<img src="${imageUrl}" alt="${product.name}">` : `<div class="product-placeholder">${product.name.slice(0, 1)}</div>`}
+            <article class="item-card">
+                <div class="image-box">
+                    ${hasImage ? `<img src="${imageUrl}" alt="${product.name}">` : `<div class="image-placeholder">${product.name.slice(0, 1)}</div>`}
                 </div>
-                <div class="product-body">
-                    <div>
-                        <h3 class="product-title">${product.name}</h3>
-                        <div class="product-meta">
-                            <span class="product-category">${product.category || 'Sin categoria'}</span>
-                        </div>
-                        <p class="product-desc">${description}</p>
-                    </div>
-                    <div class="product-price">${formatMoney(product.price_cents)}</div>
-                    <div class="product-actions">
-                        <button class="btn-primary ${disabled ? 'btn-disabled' : ''}" data-id="${product.id}" ${disabled ? 'disabled' : ''}>Agregar</button>
+                <div class="item-details">
+                    <h4>${product.name}</h4>
+                    <p class="product-desc">${description}</p>
+                    <div class="product-stock ${stock <= 0 ? 'product-stock--out' : ''}">Stock: ${stock}</div>
+                    <div class="price-action">
+                        <span class="price">${formatMoney(product.price_cents)}</span>
+                        <button class="add-cart-btn ${disabled ? 'is-disabled' : ''}" data-id="${product.id}" ${disabled ? 'disabled' : ''}>
+                            <svg fill="white" height="25" viewBox="0 0 30 30" width="25" xmlns="http://www.w3.org/2000/svg"><path d="M25.5 3C23.02 3 21 5.02 21 7.5s2.02 4.5 4.5 4.5S30 9.98 30 7.5 27.98 3 25.5 3zm0 1C27.44 4 29 5.56 29 7.5S27.44 11 25.5 11 22 9.44 22 7.5 23.56 4 25.5 4zm0 1c-.277 0-.5.223-.5.5V7h-1.5c-.277 0-.5.223-.5.5s.223.5.5.5H25v1.5c0 .277.223.5.5.5s.5-.223.5-.5V8h1.5c.277 0 .5-.223.5-.5s-.223-.5-.5-.5H26V5.5c0-.277-.223-.5-.5-.5zm-15 11h13c.277 0 .5.223.5.5s-.223.5-.5.5h-13c-.277 0-.5-.223-.5-.5s.223-.5.5-.5zm-1-4h12c.277 0 .5.223.5.5s-.223.5-.5.5h-12c-.277 0-.5-.223-.5-.5s.223-.5.5-.5zm12 10c-1.375 0-2.5 1.125-2.5 2.5s1.125 2.5 2.5 2.5 2.5-1.125 2.5-2.5-1.125-2.5-2.5-2.5zm0 1c.834 0 1.5.666 1.5 1.5s-.666 1.5-1.5 1.5-1.5-.666-1.5-1.5.666-1.5 1.5-1.5zm-10-1C10.125 22 9 23.125 9 24.5s1.125 2.5 2.5 2.5 2.5-1.125 2.5-2.5-1.125-2.5-2.5-2.5zm0 1c.834 0 1.5.666 1.5 1.5s-.666 1.5-1.5 1.5-1.5-.666-1.5-1.5.666-1.5 1.5-1.5zM.508 4c-.67 0-.677 1 0 1H4.1c.074.355.64 3.055 1.314 6.23.358 1.686.724 3.406 1.018 4.766.293 1.36.505 2.327.588 2.633.132.494.256 1.055.62 1.544.362.488 1 .826 1.86.826h13.992c.86 0 1.498-.338 1.862-.826.363-.49.486-1.05.62-1.545.087-.332.224-1.103.41-2.07.183-.97.4-2.093.6-2.947.165-.613-.856-.88-.972-.226-.206.884-.427 2.012-.612 2.984-.185.973-.347 1.832-.392 2-.136.506-.263.945-.457 1.206-.194.262-.420.424-1.058.424H9.5c-.638 0-.864-.162-1.06-.424-.193-.26-.32-.7-.456-1.205-.05-.193-.28-1.227-.574-2.585-.293-1.358-.66-3.076-1.017-4.764-.716-3.373-1.4-6.624-1.4-6.624-.048-.23-.252-.396-.49-.396zm7.994 4c-.665 0-.657 1 0 1h9.992c.672 0 .657-1 0-1z"/></svg>
+                        </button>
                     </div>
                 </div>
             </article>
@@ -139,5 +203,4 @@ clearBtn.addEventListener('click', () => {
     applyFilters();
 });
 
-updateCartCount();
 loadCatalog();

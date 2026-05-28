@@ -2,10 +2,12 @@ const chatMessages = document.getElementById('chatMessages');
 const chatForm = document.getElementById('chatForm');
 const chatInput = document.getElementById('chatInput');
 const chatStatus = document.getElementById('chatStatus');
+const faqQuick = document.querySelector('.faq-quick');
 
 const SESSION_KEY = 'sg_chat_session_id';
 
 let sessionId = localStorage.getItem(SESSION_KEY);
+let socket = null;
 
 function appendMessage(content, sender) {
     const bubble = document.createElement('div');
@@ -18,17 +20,17 @@ function appendMessage(content, sender) {
 function connect() {
     const wsBase = API_BASE.replace(/^http/, 'ws');
     const url = sessionId ? `${wsBase}/realtime/chat?session_id=${sessionId}` : `${wsBase}/realtime/chat`;
-    const ws = new WebSocket(url);
+    socket = new WebSocket(url);
 
-    ws.addEventListener('open', () => {
+    socket.addEventListener('open', () => {
         chatStatus.textContent = 'Conectado';
     });
 
-    ws.addEventListener('close', () => {
+    socket.addEventListener('close', () => {
         chatStatus.textContent = 'Desconectado';
     });
 
-    ws.addEventListener('message', (event) => {
+    socket.addEventListener('message', (event) => {
         let payload = null;
         try { payload = JSON.parse(event.data); } catch { payload = null; }
         if (!payload) return;
@@ -44,13 +46,29 @@ function connect() {
             appendMessage(payload.message.content, sender);
         }
     });
+}
 
-    chatForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const text = chatInput.value.trim();
-        if (!text) return;
-        ws.send(text);
-        chatInput.value = '';
+function sendMessage(text) {
+    const message = text.trim();
+    if (!message) return;
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        appendMessage('El chat aun se esta conectando. Intenta de nuevo en un momento.', 'assistant');
+        return;
+    }
+    socket.send(message);
+    chatInput.value = '';
+}
+
+chatForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    sendMessage(chatInput.value);
+});
+
+if (faqQuick) {
+    faqQuick.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-question]');
+        if (!button) return;
+        sendMessage(button.dataset.question || button.textContent);
     });
 }
 

@@ -172,6 +172,34 @@ nav {
     animation: pulse 1.6s infinite;
 }
 
+.faq-quick {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+}
+
+.faq-chip {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.82);
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.faq-chip:hover {
+    transform: translateY(-2px);
+    border-color: rgba(61, 214, 193, 0.5);
+    color: #fff;
+    background: rgba(61, 214, 193, 0.14);
+}
+
 .chat-messages {
     min-height: 340px;
     max-height: 520px;

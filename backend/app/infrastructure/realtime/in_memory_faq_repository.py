@@ -37,4 +37,53 @@ def _default_entries() -> List[FaqEntry]:
             answer="Atendemos de lunes a viernes de 9:00 a 18:00.",
             keywords=["horario", "atencion", "soporte"],
         ),
+        FaqEntry(
+            id="vinyl-genres",
+            question="generos de vinilos",
+            answer=(
+                "Tenemos vinilos de pop, rock ingles, rock espanol, rap, hip hop, trap, "
+                "reggae, jazz, metal, grunge, post punk, trance, banda, mariachi, boleros "
+                "y corridos. Revisa el catalogo para el listado actualizado."
+            ),
+            keywords=["generos", "genero", "categorias", "catalogo", "vinilos"],
+        ),
+        FaqEntry(
+            id="stock-info",
+            question="stock disponible",
+            answer=(
+                "En cada producto veras el stock actual. Si aparece agotado, "
+                "vuelve a revisar mas tarde."
+            ),
+            keywords=["stock", "disponible", "agotado", "existencia"],
+        ),
+        FaqEntry(
+            id="how-to-buy",
+            question="como comprar",
+            answer="Agrega el vinilo al carrito y completa el pago en checkout.",
+            keywords=["comprar", "carrito", "checkout", "pagar"],
+        ),
+        FaqEntry(
+            id="recommendations",
+            question="recomendaciones",
+            answer=(
+                "Si buscas clasicos, mira pop y rock ingles; para ritmos urbanos, "
+                "revisa rap, hip hop y trap."
+            ),
+            keywords=["recomendar", "recomendacion", "sugerir", "recomendaciones"],
+        ),
+        FaqEntry(
+            id="vinyl-care",
+            question="cuidado de vinilos",
+            answer=(
+                "Guarda tus vinilos en funda, evita el polvo y el calor, "
+                "y manipula siempre por los bordes."
+            ),
+            keywords=["cuidar", "limpiar", "guardar", "vinilo", "vinilos"],
+        ),
+        FaqEntry(
+            id="edition-details",
+            question="detalles de edicion",
+            answer="La descripcion del producto indica detalles de edicion y lanzamiento.",
+            keywords=["edicion", "estado", "detalle", "lanzamiento"],
+        ),
     ]

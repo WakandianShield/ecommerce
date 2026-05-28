@@ -30,7 +30,10 @@ class OrderService:
             if not product:
                 raise ValidationError(f"Product not found: {product_id}")
             if product.stock < quantity:
-                raise ValidationError(f"Insufficient stock for product {product_id}")
+                raise ValidationError(
+                    f"Stock insuficiente para {product.name}. Disponible: {product.stock}."
+                )
+        self._product_repo.decrement_stock(product_quantities)
         order = OrderCreate(profile_id=profile_id, shipping_address=shipping_address, items=items)
         return self._repo.create(order)
 
