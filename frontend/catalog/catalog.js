@@ -62,6 +62,9 @@ function renderProducts(list) {
         const hasImage = Boolean(imageUrl);
         const stock = Number(product.stock) || 0;
         const disabled = stock <= 0;
+        const description = product.description
+            ? product.description.replace(/\n/g, '<br>')
+            : 'Sin descripcion.';
         return `
             <article class="product-card">
                 <div class="product-media">
@@ -71,9 +74,9 @@ function renderProducts(list) {
                     <div>
                         <h3 class="product-title">${product.name}</h3>
                         <div class="product-meta">
-                            <span>${product.category || 'Sin categoria'}</span>
-                            <span>Stock: ${stock}</span>
+                            <span class="product-category">${product.category || 'Sin categoria'}</span>
                         </div>
+                        <p class="product-desc">${description}</p>
                     </div>
                     <div class="product-price">${formatMoney(product.price_cents)}</div>
                     <div class="product-actions">

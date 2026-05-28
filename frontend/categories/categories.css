@@ -81,14 +81,14 @@ nav {
 }
 
 .category-hero {
-    height: 35vh;
+    height: 28vh;
     text-align: center;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    padding-top: 80px;
+    padding-top: 70px;
 }
 
 .hero-cat-bg {
@@ -121,14 +121,14 @@ nav {
 
 .main-layout {
     max-width: 1400px;
-    margin: 40px auto 80px;
+    margin: 24px auto 48px;
     padding: 0 5%;
 }
 
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
 }
 
 .item-card {
@@ -156,7 +156,8 @@ nav {
 }
 
 .image-box {
-    height: 260px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
     border-bottom: 1px solid var(--glass-border);
 }
@@ -170,7 +171,7 @@ nav {
 }
 
 .item-details {
-    padding: 22px;
+    padding: 16px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -180,13 +181,13 @@ nav {
 .item-details h4 {
     font-family: 'Titan One', cursive;
     margin: 0 0 10px 0;
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     color: #fff;
     letter-spacing: 0.5px;
 }
 
 .product-desc {
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     color: rgba(255, 255, 255, 0.5);
     line-height: 1.6;
     margin-bottom: 20px;
@@ -203,15 +204,15 @@ nav {
 .price {
     color: var(--accent-2);
     font-family: 'Titan One', cursive;
-    font-size: 1.3rem;
+    font-size: 1.1rem;
 }
 
 .add-cart-btn {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     background: linear-gradient(135deg, var(--accent), #355cc9);
     border: none;
-    border-radius: 14px;
+    border-radius: 12px;
     color: white;
     display: flex;
     align-items: center;
@@ -290,7 +291,7 @@ footer {
 
 @media (max-width: 850px) {
     .products-grid { grid-template-columns: repeat(2, 1fr); }
-    .main-layout { margin-top: 20px; }
+    .main-layout { margin-top: 16px; }
 }
 
 @media (max-width: 550px) {

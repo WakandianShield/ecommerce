@@ -261,7 +261,7 @@ nav {
     filter: brightness(1);
 }
 
-.product-card:hover .card-overlay {
+.product-card:hover {
     opacity: 1;
 }
 

@@ -20,6 +20,7 @@ def create_order(
 ):
     service = OrderService(SqlAlchemyOrderRepository(db), SqlAlchemyProductRepository(db))
     items = [
+        OrderItemCreate(
             product_id=item.product_id,
             name=item.name,
             unit_price_cents=item.unit_price_cents,

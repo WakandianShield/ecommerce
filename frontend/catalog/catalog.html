@@ -6,28 +6,32 @@
     <title>CATALOGO | SANTIAGO GALLARDO</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Plus+Jakarta+Sans:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="catalog.css">
     <link rel="icon" href="../media/logo.png" type="image/png">
 </head>
 <body>
-    <div class="ambient"></div>
+    <img src="../media/hero.jpg" alt="" class="bg-blur">
+    <div class="hero-overlay"></div>
 
-    <nav class="topbar">
-        <a class="brand" href="../home/index.html">
-            <img class="brand-logo" src="../media/logo.png" alt="Logo">
-            <div>
-                <p class="brand-title">Santiago Gallardo</p>
-                <p class="brand-sub">Coleccion sonora</p>
-            </div>
+    <nav>
+        <a href="../home/index.html" class="logo-wrapper" aria-label="Inicio">
+            <img class="logo" src="../media/logo.png" alt="Logo">
         </a>
-        <div class="nav">
-            <a href="../home/index.html">Inicio</a>
-            <a class="active" href="catalog.html">Catalogo</a>
-            <a href="../orders/orders.html">Mis compras</a>
-            <a href="../cart/cart.html">Carrito <span id="cartCount" class="pill">0</span></a>
-            <a href="../chat/chat.html">Chat</a>
-            <a href="../login/login.html" aria-label="Perfil">Perfil</a>
+        <div class="nav-links">
+            <a href="../catalog/catalog.html" class="nav-icon" aria-label="Catalogo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            </a>
+            <a href="../chat/chat.html" class="nav-icon" aria-label="Chat">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path></svg>
+            </a>
+            <a href="../cart/cart.html" class="nav-icon" aria-label="Carrito">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                <span id="cartCount" class="pill">0</span>
+            </a>
+            <a href="../login/login.html" class="nav-icon" aria-label="Perfil">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </a>
         </div>
     </nav>
 
