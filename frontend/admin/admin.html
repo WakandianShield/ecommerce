@@ -53,6 +53,19 @@
                 <div class="grid two">
                     <form id="productForm" class="panel">
                         <input type="hidden" id="productId">
+
+                        <div class="field">
+                            <label for="productImage">Imagen</label>
+                            <div class="image-upload-area" id="imageUploadArea">
+                                <img id="imagePreview" src="" alt="" hidden>
+                                <div class="image-placeholder" id="imagePlaceholder">
+                                    <span class="upload-icon">📷</span>
+                                    <span>Selecciona una imagen</span>
+                                </div>
+                                <input id="productImage" type="file" accept="image/*">
+                            </div>
+                        </div>
+
                         <div class="field">
                             <label for="productName">Nombre</label>
                             <input id="productName" type="text" required>
@@ -79,15 +92,10 @@
                             <input id="productActive" type="checkbox" checked>
                             <label for="productActive">Activo</label>
                         </div>
-                        <div class="field">
-                            <label for="productImage">Imagen (jpg, png, webp)</label>
-                            <input id="productImage" type="file" accept="image/*">
-                        </div>
                         <div class="actions">
                             <button type="submit" class="btn primary">Guardar</button>
                             <button type="button" class="btn ghost" id="productReset">Limpiar</button>
                         </div>
-                        <p class="hint">La imagen se sube usando multipart/form-data.</p>
                     </form>
 
                     <div class="panel">

@@ -30,11 +30,30 @@ tabs.forEach((btn) => {
     btn.addEventListener('click', () => setActiveTab(btn.dataset.tab));
 });
 
+function clearImagePreview() {
+    const preview = document.getElementById('imagePreview');
+    const placeholder = document.getElementById('imagePlaceholder');
+    preview.src = '';
+    preview.hidden = true;
+    placeholder.style.display = '';
+}
+
 function resetProductForm() {
     productForm.reset();
     document.getElementById('productId').value = '';
     document.getElementById('productActive').checked = true;
+    clearImagePreview();
 }
+
+document.getElementById('productImage').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    const preview = document.getElementById('imagePreview');
+    const placeholder = document.getElementById('imagePlaceholder');
+    if (!file) { clearImagePreview(); return; }
+    preview.src = URL.createObjectURL(file);
+    preview.hidden = false;
+    placeholder.style.display = 'none';
+});
 
 function fillProductForm(product) {
     document.getElementById('productId').value = product.id;
@@ -52,17 +71,30 @@ function renderProducts() {
         return;
     }
 
-    productList.innerHTML = products.map((product) => `
+    productList.innerHTML = products.map((product) => {
+        const thumb = product.image_url
+            ? `<img class="list-thumb" src="${product.image_url}" alt="${product.name}">`
+            : `<div class="list-thumb-placeholder">🎵</div>`;
+        return `
         <div class="list-item" data-id="${product.id}">
-            <strong>${product.name}</strong>
-            <span class="badge">${product.category || 'Sin categoria'}</span>
-            <div>Precio: ${formatMoney(product.price_cents)} | Stock: ${product.stock}</div>
-            <div class="list-actions">
-                <button class="btn ghost" data-action="edit">Editar</button>
-                <button class="btn ghost" data-action="delete">Eliminar</button>
+            <div class="list-item-inner">
+                ${thumb}
+                <div class="list-info">
+                    <strong>${product.name}</strong>
+                    <div style="margin-top:4px">
+                        <span class="badge">${product.category || 'Sin categoria'}</span>
+                    </div>
+                    <div style="font-size:0.78rem;color:var(--muted);margin-top:5px">
+                        ${formatMoney(product.price_cents)} &nbsp;·&nbsp; Stock: ${product.stock}
+                    </div>
+                </div>
             </div>
-        </div>
-    `).join('');
+            <div class="list-actions">
+                <button class="btn ghost sm" data-action="edit">Editar</button>
+                <button class="btn danger sm" data-action="delete">Eliminar</button>
+            </div>
+        </div>`;
+    }).join('');
 }
 
 async function loadProducts() {
