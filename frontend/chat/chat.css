@@ -140,26 +140,8 @@ nav {
     gap: 14px;
 }
 
-.assistant-avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgba(79, 125, 243, 0.3), rgba(61, 214, 193, 0.2));
-    border: 1px solid rgba(79, 125, 243, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.inline-icon,
 .chip-icon {
     display: block;
-}
-
-.inline-icon {
-    width: 22px;
-    height: 22px;
 }
 
 .chat-header-info {
@@ -307,23 +289,6 @@ nav {
 
 .message-wrap.assistant {
     flex-direction: row;
-}
-
-.msg-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgba(79, 125, 243, 0.25), rgba(61, 214, 193, 0.15));
-    border: 1px solid rgba(79, 125, 243, 0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.msg-avatar svg {
-    width: 17px;
-    height: 17px;
 }
 
 .message {

@@ -21,9 +21,6 @@ let chatSessionsSocket = null;
 let activeChatSocket = null;
 let chatMessageIds = new Set();
 
-const userIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
-const adminIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 4v5c0 5-3.5 8-7 9-3.5-1-7-4-7-9V7l7-4z"></path></svg>';
-
 function startChatPolling(sessionId) {
     stopChatPolling();
     connectActiveChatSocket(sessionId);
@@ -147,7 +144,7 @@ function renderProducts() {
     productList.innerHTML = products.map((product) => {
         const thumb = product.image_url
             ? `<img class="list-thumb" src="${product.image_url}" alt="${product.name}">`
-            : `<div class="list-thumb-placeholder">🎵</div>`;
+            : `<div class="list-thumb-placeholder" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg></div>`;
         const dotClass = product.is_active ? 'active' : 'inactive';
         return `
         <div class="list-item" data-id="${product.id}">
@@ -339,15 +336,10 @@ function appendChatMessage(msg) {
     const bubble = document.createElement('div');
     bubble.className = `chat-bubble ${isUser ? 'user-msg' : 'admin-msg'}`;
 
-    const sender = document.createElement('span');
-    sender.className = 'bubble-sender';
-    sender.innerHTML = `${isUser ? userIconSvg : adminIconSvg} ${isUser ? 'cliente' : msg.sender}`;
-
     const text = document.createElement('p');
     text.className = 'bubble-text';
     text.textContent = msg.content;
 
-    bubble.appendChild(sender);
     bubble.appendChild(text);
     chatMessages.appendChild(bubble);
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -363,17 +355,6 @@ function renderChatMessages(messages) {
         return;
     }
     messages.forEach(appendChatMessage);
-    /*
-    chatMessages.innerHTML = messages.map((msg) => {
-        const isUser = msg.sender === 'user';
-        return `
-        <div class="chat-bubble ${isUser ? 'user-msg' : 'admin-msg'}">
-            <span class="bubble-sender">${isUser ? '👤' : '🤖'} ${msg.sender}</span>
-            <p class="bubble-text">${msg.content}</p>
-        </div>`;
-    }).join('');
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    */
 }
 
 async function connectSessionsSocket() {
