@@ -37,27 +37,32 @@
     <main class="page">
         <section class="chat-card">
             <header class="chat-header">
-                <div>
-                    <p class="eyebrow">Asistente</p>
-                    <h1>Resuelve tus dudas en minutos</h1>
+                <div class="chat-header-left">
+                    <div class="assistant-avatar">🎵</div>
+                    <div class="chat-header-info">
+                        <p class="eyebrow">Asistente virtual</p>
+                        <h1>Soporte & Consultas</h1>
+                    </div>
                 </div>
                 <span id="chatStatus" class="status">Conectando</span>
             </header>
 
             <section class="faq-quick" aria-label="Preguntas frecuentes">
-                <button type="button" class="faq-chip" data-question="estado de una orden">Estado de mi orden</button>
-                <button type="button" class="faq-chip" data-question="metodos de pago">Metodos de pago</button>
-                <button type="button" class="faq-chip" data-question="tiempos de envio">Tiempos de envio</button>
-                <button type="button" class="faq-chip" data-question="stock disponible">Stock disponible</button>
-                <button type="button" class="faq-chip" data-question="como comprar">Como comprar</button>
-                <button type="button" class="faq-chip" data-question="cuidado de vinilos">Cuidado de vinilos</button>
+                <button type="button" class="faq-chip" data-question="estado de una orden">📦 Mi orden</button>
+                <button type="button" class="faq-chip" data-question="metodos de pago">💳 Metodos de pago</button>
+                <button type="button" class="faq-chip" data-question="tiempos de envio">🚚 Tiempos de envio</button>
+                <button type="button" class="faq-chip" data-question="stock disponible">🎵 Stock disponible</button>
+                <button type="button" class="faq-chip" data-question="como comprar">🛒 Como comprar</button>
+                <button type="button" class="faq-chip" data-question="cuidado de vinilos">💿 Cuidado de vinilos</button>
             </section>
 
             <div id="chatMessages" class="chat-messages"></div>
 
             <form id="chatForm" class="chat-form">
                 <input id="chatInput" type="text" placeholder="Escribe tu mensaje..." autocomplete="off" required>
-                <button type="submit" class="btn-send">Enviar</button>
+                <button type="submit" class="btn-send" aria-label="Enviar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
             </form>
         </section>
     </main>

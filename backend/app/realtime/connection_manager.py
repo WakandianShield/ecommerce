@@ -15,4 +15,7 @@ class ConnectionManager:
     async def send_json(self, session_id: str, payload: dict) -> None:
         websocket = self._connections.get(session_id)
         if websocket:
-            await websocket.send_json(payload)
+            try:
+                await websocket.send_json(payload)
+            except Exception:
+                self._connections.pop(session_id, None)
