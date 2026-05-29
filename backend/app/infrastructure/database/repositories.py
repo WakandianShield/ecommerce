@@ -1,15 +1,17 @@
 from typing import List, Optional
 import uuid
 
-from sqlalchemy import func, select
+from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
 
 from app.domain.entities.order import Order, OrderCreate, OrderItem
 from app.domain.entities.product import Product, ProductCreate, ProductUpdate
 from app.domain.entities.profile import Profile, ProfileAuth
 from app.domain.entities.refresh_token import RefreshToken
+from app.domain.entities.chat import ChatMessage
 from app.domain.errors import ValidationError
 from app.infrastructure.database.models import (
+    ChatModel,
     OrderItemModel,
     OrderModel,
     ProductModel,
@@ -181,6 +183,54 @@ class SqlAlchemyRefreshTokenRepository:
             profile_id=model.profile_id,
             expires_at=model.expires_at,
             revoked_at=model.revoked_at,
+        )
+
+
+class SqlAlchemyChatRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def create_session(self, session_id: str) -> None:
+        return None
+
+    def list_sessions(self) -> List[str]:
+        last_message_at = func.max(ChatModel.created_at).label("last_message_at")
+        stmt = (
+            select(ChatModel.session_id, last_message_at)
+            .group_by(ChatModel.session_id)
+            .order_by(desc(last_message_at))
+        )
+        rows = self._session.execute(stmt).all()
+        return [row.session_id for row in rows]
+
+    def add_message(self, session_id: str, message: ChatMessage) -> None:
+        model = ChatModel(
+            id=message.id,
+            session_id=session_id,
+            sender=message.sender,
+            content=message.content,
+            created_at=message.created_at,
+        )
+        self._session.add(model)
+        self._session.commit()
+
+    def list_messages(self, session_id: str) -> List[ChatMessage]:
+        stmt = (
+            select(ChatModel)
+            .where(ChatModel.session_id == session_id)
+            .order_by(ChatModel.created_at, ChatModel.id)
+        )
+        messages = self._session.execute(stmt).scalars().all()
+        return [self._to_entity(message) for message in messages]
+
+    @staticmethod
+    def _to_entity(model: ChatModel) -> ChatMessage:
+        return ChatMessage(
+            id=model.id,
+            session_id=model.session_id,
+            sender=model.sender,
+            content=model.content,
+            created_at=model.created_at,
         )
 
 

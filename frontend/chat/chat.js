@@ -10,8 +10,13 @@ let sessionId   = localStorage.getItem(SESSION_KEY);
 let socket      = null;
 let reconnectTimer = null;
 let reconnectDelay = 2000;
+let messageIds = new Set();
 
-function appendMessage(content, sender) {
+const musicIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>';
+
+function appendMessage(content, sender, id = null) {
+    if (id && messageIds.has(id)) return;
+    if (id) messageIds.add(id);
     removeTyping();
 
     const wrap = document.createElement('div');
@@ -20,7 +25,7 @@ function appendMessage(content, sender) {
     if (sender === 'assistant') {
         const avatar = document.createElement('div');
         avatar.className = 'msg-avatar';
-        avatar.textContent = '🎵';
+        avatar.innerHTML = musicIconSvg;
         wrap.appendChild(avatar);
     }
 
@@ -33,6 +38,15 @@ function appendMessage(content, sender) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+function renderHistory(messages) {
+    messageIds = new Set();
+    chatMessages.innerHTML = '';
+    messages.forEach((message) => {
+        const sender = message.sender === 'customer' ? 'user' : 'assistant';
+        appendMessage(message.content, sender, message.id);
+    });
+}
+
 function showTyping() {
     if (document.getElementById('typingIndicator')) return;
     const wrap = document.createElement('div');
@@ -41,7 +55,7 @@ function showTyping() {
 
     const avatar = document.createElement('div');
     avatar.className = 'msg-avatar';
-    avatar.textContent = '🎵';
+    avatar.innerHTML = musicIconSvg;
 
     const dots = document.createElement('div');
     dots.className = 'typing-dots';
@@ -64,7 +78,7 @@ function setStatus(text, connected = false) {
 
 function connect() {
     clearTimeout(reconnectTimer);
-    setStatus('Conectando…');
+    setStatus('Conectando...');
 
     const wsBase = API_BASE.replace(/^http/, 'ws');
     const url = sessionId
@@ -79,7 +93,7 @@ function connect() {
     });
 
     socket.addEventListener('close', () => {
-        setStatus('Reconectando…');
+        setStatus('Reconectando...');
         reconnectTimer = setTimeout(connect, reconnectDelay);
         reconnectDelay = Math.min(reconnectDelay * 1.5, 15000);
     });
@@ -99,9 +113,14 @@ function connect() {
             return;
         }
 
+        if (payload.type === 'history' && Array.isArray(payload.messages)) {
+            renderHistory(payload.messages);
+            return;
+        }
+
         if (payload.type === 'message' && payload.message) {
-            const sender = payload.message.sender === 'assistant' ? 'assistant' : 'user';
-            appendMessage(payload.message.content, sender);
+            const sender = payload.message.sender === 'customer' ? 'user' : 'assistant';
+            appendMessage(payload.message.content, sender, payload.message.id);
         }
 
         if (payload.type === 'error') {
@@ -114,7 +133,7 @@ function sendMessage(text) {
     const message = text.trim();
     if (!message) return;
     if (!socket || socket.readyState !== WebSocket.OPEN) {
-        appendMessage('Conectando… intenta de nuevo en un momento.', 'assistant');
+        appendMessage('Conectando... intenta de nuevo en un momento.', 'assistant');
         return;
     }
     socket.send(message);

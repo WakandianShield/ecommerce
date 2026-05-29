@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import uuid
 
-from app.domain.entities.chat import ChatMessage, SENDER_ASSISTANT, SENDER_CUSTOMER
+from app.domain.entities.chat import ChatMessage, SENDER_ADMIN, SENDER_ASSISTANT, SENDER_CUSTOMER
 from app.domain.ports.chat_repository import ChatRepository
 from app.domain.ports.faq_matcher import FaqMatcher
 from app.domain.ports.faq_repository import FaqRepository
@@ -54,7 +54,7 @@ class ChatService:
         message = ChatMessage(
             id=str(uuid.uuid4()),
             session_id=session_id,
-            sender=SENDER_ASSISTANT,
+            sender=SENDER_ADMIN,
             content=cleaned,
             created_at=datetime.now(timezone.utc),
         )

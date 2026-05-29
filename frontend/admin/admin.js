@@ -17,25 +17,26 @@ let products = [];
 let activeSession = null;
 let chatPollInterval = null;
 let lastMessageCount = 0;
+let chatSessionsSocket = null;
+let activeChatSocket = null;
+let chatMessageIds = new Set();
+
+const userIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+const adminIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 4v5c0 5-3.5 8-7 9-3.5-1-7-4-7-9V7l7-4z"></path></svg>';
 
 function startChatPolling(sessionId) {
     stopChatPolling();
-    chatPollInterval = setInterval(async () => {
-        try {
-            const data = await sgApi(`/realtime/sessions/${sessionId}`);
-            const messages = Array.isArray(data.messages) ? data.messages : [];
-            if (messages.length !== lastMessageCount) {
-                lastMessageCount = messages.length;
-                renderChatMessages(messages);
-            }
-        } catch (_) {  }
-    }, 3000);
+    connectActiveChatSocket(sessionId);
 }
 
 function stopChatPolling() {
     if (chatPollInterval) {
         clearInterval(chatPollInterval);
         chatPollInterval = null;
+    }
+    if (activeChatSocket) {
+        activeChatSocket.close();
+        activeChatSocket = null;
     }
 }
 
@@ -71,15 +72,12 @@ async function sendAdminReply() {
     if (!content || !activeSession) return;
     adminReplyBtn.disabled = true;
     try {
-        await sgApi(`/realtime/sessions/${activeSession}/reply`, {
+        const data = await sgApi(`/realtime/sessions/${activeSession}/reply`, {
             method: 'POST',
             body: { content },
         });
         adminReplyInput.value = '';
-        const data = await sgApi(`/realtime/sessions/${activeSession}`);
-        const messages = Array.isArray(data.messages) ? data.messages : [];
-        lastMessageCount = messages.length;
-        renderChatMessages(messages);
+        if (data.message) appendChatMessage(data.message);
     } catch (err) {
         alert(err.message);
     } finally {
@@ -327,20 +325,45 @@ function renderSessions(sessions) {
         return;
     }
     chatSessions.innerHTML = sessions.map((session) => `
-        <div class="session-item" data-session="${session}">
+        <div class="session-item ${session === activeSession ? 'active' : ''}" data-session="${session}">
             <span class="session-dot"></span>
             <span class="session-name">${session}</span>
         </div>
     `).join('');
 }
 
+function appendChatMessage(msg) {
+    if (!msg || chatMessageIds.has(msg.id)) return;
+    chatMessageIds.add(msg.id);
+    const isUser = msg.sender === 'customer';
+    const bubble = document.createElement('div');
+    bubble.className = `chat-bubble ${isUser ? 'user-msg' : 'admin-msg'}`;
+
+    const sender = document.createElement('span');
+    sender.className = 'bubble-sender';
+    sender.innerHTML = `${isUser ? userIconSvg : adminIconSvg} ${isUser ? 'cliente' : msg.sender}`;
+
+    const text = document.createElement('p');
+    text.className = 'bubble-text';
+    text.textContent = msg.content;
+
+    bubble.appendChild(sender);
+    bubble.appendChild(text);
+    chatMessages.appendChild(bubble);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
 function renderChatMessages(messages) {
     const emptyState = document.getElementById('chatEmptyState');
     if (emptyState) emptyState.style.display = 'none';
+    chatMessageIds = new Set();
+    chatMessages.innerHTML = '';
     if (!messages.length) {
         chatMessages.innerHTML = '<p style="font-size:0.8rem;color:var(--muted);padding:8px">Sin mensajes en esta sesion.</p>';
         return;
     }
+    messages.forEach(appendChatMessage);
+    /*
     chatMessages.innerHTML = messages.map((msg) => {
         const isUser = msg.sender === 'user';
         return `
@@ -350,10 +373,53 @@ function renderChatMessages(messages) {
         </div>`;
     }).join('');
     chatMessages.scrollTop = chatMessages.scrollHeight;
+    */
+}
+
+async function connectSessionsSocket() {
+    const token = await sgGetToken();
+    if (!token || chatSessionsSocket) return;
+    const wsBase = API_BASE.replace(/^http/, 'ws');
+    chatSessionsSocket = new WebSocket(`${wsBase}/realtime/admin/sessions?token=${encodeURIComponent(token)}`);
+    chatSessionsSocket.addEventListener('message', (event) => {
+        let payload = null;
+        try { payload = JSON.parse(event.data); } catch { return; }
+        if (payload.type === 'sessions' && Array.isArray(payload.sessions)) {
+            renderSessions(payload.sessions);
+        }
+    });
+    chatSessionsSocket.addEventListener('close', () => {
+        chatSessionsSocket = null;
+    });
+}
+
+async function connectActiveChatSocket(sessionId) {
+    const token = await sgGetToken();
+    if (!token) return;
+    if (activeChatSocket) activeChatSocket.close();
+    const wsBase = API_BASE.replace(/^http/, 'ws');
+    const socket = new WebSocket(`${wsBase}/realtime/admin/chat?session_id=${encodeURIComponent(sessionId)}&token=${encodeURIComponent(token)}`);
+    activeChatSocket = socket;
+    socket.addEventListener('message', (event) => {
+        let payload = null;
+        try { payload = JSON.parse(event.data); } catch { return; }
+        if (payload.type === 'history' && Array.isArray(payload.messages)) {
+            lastMessageCount = payload.messages.length;
+            renderChatMessages(payload.messages);
+        }
+        if (payload.type === 'message' && payload.message) {
+            lastMessageCount += 1;
+            appendChatMessage(payload.message);
+        }
+    });
+    socket.addEventListener('close', () => {
+        if (activeChatSocket === socket && activeSession === sessionId) activeChatSocket = null;
+    });
 }
 
 async function loadSessions() {
     try {
+        connectSessionsSocket();
         const data = await sgApi('/realtime/sessions');
         const sessions = Array.isArray(data.sessions) ? data.sessions : [];
         renderSessions(sessions);
@@ -406,6 +472,7 @@ async function init() {
     await loadProducts();
     await loadOrders();
     await loadSessions();
+    await connectSessionsSocket();
 }
 
 init();

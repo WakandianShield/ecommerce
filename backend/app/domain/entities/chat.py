@@ -4,6 +4,7 @@ from datetime import datetime
 
 SENDER_CUSTOMER = "customer"
 SENDER_ASSISTANT = "assistant"
+SENDER_ADMIN = "admin"
 
 
 @dataclass(frozen=True)
