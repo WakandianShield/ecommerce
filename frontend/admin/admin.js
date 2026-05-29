@@ -21,13 +21,22 @@ function formatMoney(cents) {
     return `$${value.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
 }
 
+const tabLoaders = {
+    products: () => loadProducts(),
+    orders:   () => loadOrders(),
+    chat:     () => loadSessions(),
+};
+
 function setActiveTab(tab) {
     tabs.forEach((btn) => btn.classList.toggle('active', btn.dataset.tab === tab));
     sections.forEach((section) => section.classList.toggle('active', section.dataset.section === tab));
 }
 
 tabs.forEach((btn) => {
-    btn.addEventListener('click', () => setActiveTab(btn.dataset.tab));
+    btn.addEventListener('click', () => {
+        setActiveTab(btn.dataset.tab);
+        tabLoaders[btn.dataset.tab]?.();
+    });
 });
 
 function clearImagePreview() {
@@ -42,6 +51,7 @@ function resetProductForm() {
     productForm.reset();
     document.getElementById('productId').value = '';
     document.getElementById('productActive').checked = true;
+    document.getElementById('formTitle').textContent = 'Nuevo producto';
     clearImagePreview();
 }
 
@@ -63,6 +73,14 @@ function fillProductForm(product) {
     document.getElementById('productPrice').value = ((Number(product.price_cents) || 0) / 100).toFixed(2);
     document.getElementById('productStock').value = Number(product.stock) || 0;
     document.getElementById('productActive').checked = Boolean(product.is_active);
+    document.getElementById('formTitle').textContent = 'Editar producto';
+    if (product.image_url) {
+        const preview = document.getElementById('imagePreview');
+        const placeholder = document.getElementById('imagePlaceholder');
+        preview.src = product.image_url;
+        preview.hidden = false;
+        placeholder.style.display = 'none';
+    }
 }
 
 function renderProducts() {
@@ -75,12 +93,16 @@ function renderProducts() {
         const thumb = product.image_url
             ? `<img class="list-thumb" src="${product.image_url}" alt="${product.name}">`
             : `<div class="list-thumb-placeholder">🎵</div>`;
+        const dotClass = product.is_active ? 'active' : 'inactive';
         return `
         <div class="list-item" data-id="${product.id}">
             <div class="list-item-inner">
                 ${thumb}
                 <div class="list-info">
-                    <strong>${product.name}</strong>
+                    <div style="display:flex;align-items:center;gap:6px">
+                        <strong>${product.name}</strong>
+                        <span class="status-dot ${dotClass}"></span>
+                    </div>
                     <div style="margin-top:4px">
                         <span class="badge">${product.category || 'Sin categoria'}</span>
                     </div>
@@ -183,27 +205,35 @@ productList.addEventListener('click', async (e) => {
     }
 });
 
+const statusLabels = { created: 'Creada', paid: 'Pagada', shipped: 'Enviada', delivered: 'Entregada', canceled: 'Cancelada' };
+
 function renderOrders(orders) {
     if (!orders.length) {
-        ordersList.innerHTML = '<div class="order-card">No hay ordenes.</div>';
+        ordersList.innerHTML = '<div class="order-card" style="grid-column:1/-1;text-align:center;color:var(--muted)">No hay ordenes.</div>';
         return;
     }
 
     ordersList.innerHTML = orders.map((order) => {
-        const items = order.items.map((item) => `${item.name} x${item.quantity}`).join(', ');
+        const pills = order.items.map((item) =>
+            `<span class="order-item-pill">${item.name} ×${item.quantity}</span>`
+        ).join('');
+        const statusClass = order.status || 'created';
+        const statusOptions = ['created', 'paid', 'shipped', 'delivered', 'canceled'].map((s) =>
+            `<option value="${s}" ${order.status === s ? 'selected' : ''}>${statusLabels[s] || s}</option>`
+        ).join('');
         return `
-            <div class="order-card" data-id="${order.id}">
-                <h4>Orden ${order.id.slice(0, 8)}</h4>
-                <div class="order-items">${items}</div>
-                <p>Total: ${formatMoney(order.total_cents)}</p>
-                <select class="status-select">
-                    ${['created', 'paid', 'shipped', 'delivered', 'canceled'].map((status) => `
-                        <option value="${status}" ${order.status === status ? 'selected' : ''}>${status}</option>
-                    `).join('')}
-                </select>
-                <button class="btn primary" data-action="update">Actualizar estado</button>
+        <div class="order-card" data-id="${order.id}">
+            <div class="order-card-head">
+                <span class="order-id">#${order.id.slice(0, 8).toUpperCase()}</span>
+                <span class="order-total">${formatMoney(order.total_cents)}</span>
             </div>
-        `;
+            <div class="order-items">${pills}</div>
+            <div class="order-footer">
+                <span class="status-badge ${statusClass}">${statusLabels[statusClass] || statusClass}</span>
+                <select class="status-select">${statusOptions}</select>
+                <button class="btn primary sm" data-action="update">Guardar</button>
+            </div>
+        </div>`;
     }).join('');
 }
 
@@ -234,32 +264,35 @@ ordersList.addEventListener('click', async (e) => {
 refreshOrders.addEventListener('click', loadOrders);
 
 function renderSessions(sessions) {
+    const emptyState = document.getElementById('chatEmptyState');
     if (!sessions.length) {
-        chatSessions.innerHTML = '<div class="list-item">No hay sesiones activas.</div>';
+        chatSessions.innerHTML = '<p style="font-size:0.8rem;color:var(--muted);padding:8px">Sin sesiones activas.</p>';
         return;
     }
-
     chatSessions.innerHTML = sessions.map((session) => `
-        <div class="list-item" data-session="${session}">
-            <strong>${session}</strong>
-            <div class="list-actions">
-                <button class="btn ghost" data-action="open">Ver</button>
-            </div>
+        <div class="session-item" data-session="${session}">
+            <span class="session-dot"></span>
+            <span class="session-name">${session}</span>
         </div>
     `).join('');
 }
 
 function renderChatMessages(messages) {
+    const emptyState = document.getElementById('chatEmptyState');
+    if (emptyState) emptyState.style.display = 'none';
     if (!messages.length) {
-        chatMessages.innerHTML = '<div class="chat-bubble">Sin mensajes.</div>';
+        chatMessages.innerHTML = '<p style="font-size:0.8rem;color:var(--muted);padding:8px">Sin mensajes en esta sesion.</p>';
         return;
     }
-
-    chatMessages.innerHTML = messages.map((msg) => `
-        <div class="chat-bubble">
-            <strong>${msg.sender}:</strong> ${msg.content}
-        </div>
-    `).join('');
+    chatMessages.innerHTML = messages.map((msg) => {
+        const isUser = msg.sender === 'user';
+        return `
+        <div class="chat-bubble ${isUser ? 'user-msg' : 'admin-msg'}">
+            <span class="bubble-sender">${isUser ? '👤' : '🤖'} ${msg.sender}</span>
+            <p class="bubble-text">${msg.content}</p>
+        </div>`;
+    }).join('');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 async function loadSessions() {
@@ -285,7 +318,11 @@ async function loadSessionMessages(sessionId) {
 chatSessions.addEventListener('click', (e) => {
     const card = e.target.closest('[data-session]');
     if (!card) return;
+    document.querySelectorAll('.session-item').forEach((s) => s.classList.remove('active'));
+    card.classList.add('active');
     const sessionId = card.dataset.session;
+    const label = document.getElementById('activeChatLabel');
+    if (label) label.textContent = sessionId;
     loadSessionMessages(sessionId);
 });
 
@@ -302,7 +339,8 @@ async function init() {
         return;
     }
 
-    document.getElementById('adminName').textContent = user.fullName || user.email;
+    const nameEl = document.getElementById('adminName');
+    if (nameEl) nameEl.textContent = user.fullName || user.email;
 
     await loadProducts();
     await loadOrders();

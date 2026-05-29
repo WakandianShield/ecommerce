@@ -11,56 +11,57 @@
     <link rel="icon" href="../media/logo.png" type="image/png">
 </head>
 <body>
-    <div class="ambient"></div>
+    <img src="../media/hero.jpg" alt="" class="bg-blur">
+    <div class="hero-overlay"></div>
 
-    <header class="admin-topbar">
-        <div class="brand">
-            <img class="brand-logo" src="../media/logo.png" alt="Logo">
-            <div>
-                <p class="brand-title">Backoffice</p>
-                <p class="brand-sub">Gestion administrativa</p>
-            </div>
+    <nav>
+        <a href="../home/index.html" class="logo-wrapper" aria-label="Inicio">
+            <img class="logo" src="../media/logo.png" alt="Logo">
+        </a>
+        <div class="nav-links">
+            <a href="../catalog/catalog.html" class="nav-icon" aria-label="Catalogo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            </a>
+            <a href="../chat/chat.html" class="nav-icon" aria-label="Chat">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path></svg>
+            </a>
+            <a href="../cart/cart.html" class="nav-icon" aria-label="Carrito">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            </a>
+            <a href="../login/login.html" class="nav-icon" aria-label="Perfil">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </a>
         </div>
-        <div class="admin-actions">
-            <span id="adminName" class="admin-name"></span>
-            <a class="btn ghost" href="../home/index.html">Volver al sitio</a>
-        </div>
-    </header>
+    </nav>
 
     <div class="admin-shell">
         <aside class="admin-nav">
             <span class="nav-label">Menu</span>
-            <button class="nav-btn active" data-tab="products">
-                <span class="icon">🎵</span> Productos
-            </button>
-            <button class="nav-btn" data-tab="orders">
-                <span class="icon">📦</span> Ordenes
-            </button>
-            <button class="nav-btn" data-tab="chat">
-                <span class="icon">💬</span> Chat
-            </button>
+            <button class="nav-btn active" data-tab="products">Productos</button>
+            <button class="nav-btn" data-tab="orders">Ordenes</button>
+            <button class="nav-btn" data-tab="chat">Chat</button>
         </aside>
 
         <main class="admin-content">
-            <section class="section active" data-section="products">
-                <div class="section-head">
-                    <div>
-                        <p class="eyebrow">Catalogo</p>
-                        <h2>Gestion de productos</h2>
-                    </div>
-                </div>
 
-                <div class="grid two">
+            <!-- PRODUCTOS -->
+            <section class="section active" data-section="products">
+                <div class="grid two products-panels">
                     <form id="productForm" class="panel">
+                        <div class="panel-head">
+                            <h3 id="formTitle">Nuevo producto</h3>
+                            <button type="button" class="btn ghost sm" id="productReset">Limpiar</button>
+                        </div>
+
                         <input type="hidden" id="productId">
 
-                        <div class="field">
+                        <div class="field field--grow">
                             <label for="productImage">Imagen</label>
                             <div class="image-upload-area" id="imageUploadArea">
                                 <img id="imagePreview" src="" alt="" hidden>
                                 <div class="image-placeholder" id="imagePlaceholder">
                                     <span class="upload-icon">📷</span>
-                                    <span>Selecciona una imagen</span>
+                                    <span>Clic para seleccionar</span>
                                 </div>
                                 <input id="productImage" type="file" accept="image/*">
                             </div>
@@ -72,7 +73,7 @@
                         </div>
                         <div class="field">
                             <label for="productDescription">Descripcion</label>
-                            <textarea id="productDescription" rows="3"></textarea>
+                            <textarea id="productDescription" rows="2"></textarea>
                         </div>
                         <div class="field">
                             <label for="productCategory">Categoria</label>
@@ -94,50 +95,57 @@
                         </div>
                         <div class="actions">
                             <button type="submit" class="btn primary">Guardar</button>
-                            <button type="button" class="btn ghost" id="productReset">Limpiar</button>
                         </div>
                     </form>
 
                     <div class="panel">
                         <div class="panel-head">
-                            <h3>Productos activos</h3>
-                            <button class="btn ghost" id="refreshProducts">Refrescar</button>
+                            <h3>Productos</h3>
+                            <button class="btn ghost sm" id="refreshProducts">Refrescar</button>
                         </div>
                         <div id="productList" class="list"></div>
                     </div>
                 </div>
             </section>
 
+            <!-- ORDENES -->
             <section class="section" data-section="orders">
-                <div class="section-head">
-                    <div>
-                        <p class="eyebrow">Ordenes</p>
-                        <h2>Seguimiento de pedidos</h2>
+                <div class="orders-wrapper">
+                    <div class="orders-topbar">
+                        <div class="orders-topbar-left">
+                            <span class="tab-eyebrow">Gestion</span>
+                            <h2 class="tab-title">Pedidos</h2>
+                        </div>
+                        <button class="btn ghost sm" id="refreshOrders">Refrescar</button>
                     </div>
-                    <button class="btn ghost" id="refreshOrders">Refrescar</button>
+                    <div id="adminOrdersList" class="orders-grid"></div>
                 </div>
-                <div id="adminOrdersList" class="orders"></div>
             </section>
 
+            <!-- CHAT -->
             <section class="section" data-section="chat">
-                <div class="section-head">
-                    <div>
-                        <p class="eyebrow">Conversaciones</p>
-                        <h2>Sesiones de chat</h2>
+                <div class="chat-layout">
+                    <div class="panel chat-sidebar">
+                        <div class="panel-head">
+                            <h3>Sesiones</h3>
+                            <button class="btn ghost sm" id="refreshChat">Refrescar</button>
+                        </div>
+                        <div id="chatSessions" class="sessions-list"></div>
                     </div>
-                    <button class="btn ghost" id="refreshChat">Refrescar</button>
-                </div>
-                <div class="grid two">
-                    <div class="panel">
-                        <h3>Sesiones activas</h3>
-                        <div id="chatSessions" class="list"></div>
-                    </div>
-                    <div class="panel">
-                        <h3>Mensajes</h3>
+                    <div class="panel chat-main">
+                        <div class="panel-head">
+                            <h3>Conversacion</h3>
+                            <span id="activeChatLabel" class="active-chat-label"></span>
+                        </div>
                         <div id="chatMessages" class="chat-messages"></div>
+                        <div class="chat-empty-state" id="chatEmptyState">
+                            <span>💬</span>
+                            <p>Selecciona una sesion para ver los mensajes</p>
+                        </div>
                     </div>
                 </div>
             </section>
+
         </main>
     </div>
 
