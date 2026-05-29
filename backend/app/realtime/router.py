@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
+from pydantic import BaseModel
 
 from app.application.use_cases.chat_service import ChatService
 from app.domain.entities.chat import ChatMessage
@@ -41,6 +42,27 @@ def get_session_messages(session_id: str, profile=Depends(require_roles("admin",
         "session_id": session_id,
         "messages": [_serialize_message(message) for message in messages],
     }
+
+
+class AdminReplyBody(BaseModel):
+    content: str
+
+
+@router.post("/sessions/{session_id}/reply")
+async def admin_reply(
+    session_id: str,
+    body: AdminReplyBody,
+    _profile=Depends(require_roles("admin", "operator")),
+):
+    try:
+        message = _chat_service.inject_assistant_message(session_id, body.content)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    await _manager.send_json(
+        session_id,
+        {"type": "message", "message": _serialize_message(message)},
+    )
+    return {"message": _serialize_message(message)}
 
 
 @router.websocket("/chat")

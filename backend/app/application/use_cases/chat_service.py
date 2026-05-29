@@ -47,6 +47,20 @@ class ChatService:
         self._chat_repo.add_message(session_id, assistant_message)
         return user_message, assistant_message
 
+    def inject_assistant_message(self, session_id: str, content: str) -> ChatMessage:
+        cleaned = content.strip()
+        if not cleaned:
+            raise ValueError("Empty message")
+        message = ChatMessage(
+            id=str(uuid.uuid4()),
+            session_id=session_id,
+            sender=SENDER_ASSISTANT,
+            content=cleaned,
+            created_at=datetime.now(timezone.utc),
+        )
+        self._chat_repo.add_message(session_id, message)
+        return message
+
     def list_messages(self, session_id: str) -> list[ChatMessage]:
         return self._chat_repo.list_messages(session_id)
 

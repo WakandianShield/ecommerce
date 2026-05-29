@@ -15,6 +15,29 @@ const refreshChat = document.getElementById('refreshChat');
 
 let products = [];
 let activeSession = null;
+let chatPollInterval = null;
+let lastMessageCount = 0;
+
+function startChatPolling(sessionId) {
+    stopChatPolling();
+    chatPollInterval = setInterval(async () => {
+        try {
+            const data = await sgApi(`/realtime/sessions/${sessionId}`);
+            const messages = Array.isArray(data.messages) ? data.messages : [];
+            if (messages.length !== lastMessageCount) {
+                lastMessageCount = messages.length;
+                renderChatMessages(messages);
+            }
+        } catch (_) { /* silent */ }
+    }, 3000);
+}
+
+function stopChatPolling() {
+    if (chatPollInterval) {
+        clearInterval(chatPollInterval);
+        chatPollInterval = null;
+    }
+}
 
 function formatMoney(cents) {
     const value = (Number(cents) || 0) / 100;
@@ -34,9 +57,43 @@ function setActiveTab(tab) {
 
 tabs.forEach((btn) => {
     btn.addEventListener('click', () => {
+        if (btn.dataset.tab !== 'chat') stopChatPolling();
         setActiveTab(btn.dataset.tab);
         tabLoaders[btn.dataset.tab]?.();
     });
+});
+
+const adminReplyBtn = document.getElementById('adminReplyBtn');
+const adminReplyInput = document.getElementById('adminReplyInput');
+
+async function sendAdminReply() {
+    const content = adminReplyInput.value.trim();
+    if (!content || !activeSession) return;
+    adminReplyBtn.disabled = true;
+    try {
+        await sgApi(`/realtime/sessions/${activeSession}/reply`, {
+            method: 'POST',
+            body: { content },
+        });
+        adminReplyInput.value = '';
+        const data = await sgApi(`/realtime/sessions/${activeSession}`);
+        const messages = Array.isArray(data.messages) ? data.messages : [];
+        lastMessageCount = messages.length;
+        renderChatMessages(messages);
+    } catch (err) {
+        alert(err.message);
+    } finally {
+        adminReplyBtn.disabled = false;
+    }
+}
+
+adminReplyBtn.addEventListener('click', sendAdminReply);
+
+adminReplyInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        sendAdminReply();
+    }
 });
 
 function clearImagePreview() {
@@ -308,8 +365,12 @@ async function loadSessions() {
 async function loadSessionMessages(sessionId) {
     try {
         const data = await sgApi(`/realtime/sessions/${sessionId}`);
-        renderChatMessages(Array.isArray(data.messages) ? data.messages : []);
+        const messages = Array.isArray(data.messages) ? data.messages : [];
+        renderChatMessages(messages);
+        lastMessageCount = messages.length;
         activeSession = sessionId;
+        document.getElementById('chatReply').hidden = false;
+        startChatPolling(sessionId);
     } catch (err) {
         chatMessages.innerHTML = `<div class="chat-bubble">${err.message}</div>`;
     }
