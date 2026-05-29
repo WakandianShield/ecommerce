@@ -157,7 +157,6 @@ nav {
     animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Productos: dos paneles al 80% del espacio disponible */
 .products-panels {
     height: 100%;
     align-items: start;
@@ -171,7 +170,6 @@ nav {
     flex-direction: column;
 }
 
-/* ── Ordenes ── */
 .orders-wrapper {
     height: calc((100vh - 130px) * 0.9);
     display: flex;
@@ -221,7 +219,6 @@ nav {
 .orders-grid::-webkit-scrollbar { width: 4px; }
 .orders-grid::-webkit-scrollbar-thumb { background: rgba(79, 125, 243, 0.25); border-radius: 10px; }
 
-/* ── Chat layout ── */
 .chat-layout {
     display: grid;
     grid-template-columns: 260px 1fr;
@@ -324,7 +321,6 @@ nav {
 .chat-empty-state span { font-size: 2.5rem; opacity: 0.4; }
 .chat-empty-state p { font-size: 0.82rem; color: var(--muted); opacity: 0.6; }
 
-/* ── Chat reply box ── */
 .chat-reply {
     flex-shrink: 0;
     display: flex;
@@ -355,7 +351,6 @@ nav {
     box-shadow: 0 0 0 3px rgba(79, 125, 243, 0.12);
 }
 
-/* ── Grid helpers ── */
 .grid {
     display: grid;
     gap: 20px;
@@ -365,7 +360,6 @@ nav {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
-/* ── Panels (cards) ── */
 .panel {
     padding: 18px 20px;
     border-radius: 24px;
@@ -407,7 +401,6 @@ nav {
     letter-spacing: 0.3px;
 }
 
-/* ── Form fields ── */
 .field {
     display: grid;
     gap: 5px;
@@ -478,7 +471,6 @@ nav {
     box-shadow: none;
 }
 
-/* ── Buttons ── */
 .btn {
     border: none;
     border-radius: 50px;
@@ -546,7 +538,6 @@ nav {
     margin-top: 4px;
 }
 
-/* ── List items ── */
 .list {
     display: grid;
     gap: 12px;
@@ -595,7 +586,6 @@ nav {
     flex-wrap: wrap;
 }
 
-/* ── Badges ── */
 .badge {
     display: inline-flex;
     align-items: center;
@@ -625,14 +615,12 @@ nav {
     border: 1px solid rgba(255, 107, 107, 0.25);
 }
 
-/* ── Default badge (backwards compat) ── */
 .badge:not(.green):not(.blue):not(.red) {
     background: rgba(61, 214, 193, 0.15);
     color: var(--accent-2);
     border: 1px solid rgba(61, 214, 193, 0.2);
 }
 
-/* ── Order cards ── */
 .order-card {
     border: 1px solid var(--glass-border);
     border-radius: 20px;
@@ -739,7 +727,6 @@ nav {
 .status-badge.delivered{ background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
 .status-badge.canceled { background: rgba(255,107,107,0.15); color: var(--danger); border: 1px solid rgba(255,107,107,0.3); }
 
-/* ── Chat messages ── */
 .chat-messages {
     display: grid;
     gap: 10px;
@@ -803,9 +790,8 @@ nav {
 
 .chat-bubble.admin-msg .bubble-sender { color: var(--accent-2); opacity: 1; }
 
-/* ── Campo imagen crece para llenar el espacio disponible ── */
 #productForm {
-    overflow-y: auto; /* fallback en viewports pequeños */
+    overflow-y: auto; 
 }
 
 .field--grow {
@@ -819,10 +805,9 @@ nav {
 
 .field--grow .image-upload-area {
     flex: 1;
-    height: auto; /* anula el height fijo */
+    height: auto;
 }
 
-/* ── Image upload area ── */
 .image-upload-area {
     position: relative;
     border-radius: 14px;
@@ -831,7 +816,7 @@ nav {
     cursor: pointer;
     transition: border-color 0.25s, background 0.25s;
     background: rgba(0, 0, 0, 0.25);
-    height: 110px; /* valor por defecto; field--grow lo sobreescribe */
+    height: 110px; 
     display: flex;
     align-items: center;
     justify-content: center;
@@ -880,7 +865,6 @@ nav {
     transition: opacity 0.3s;
 }
 
-/* ── Status dot ── */
 .status-dot {
     display: inline-block;
     width: 8px;
@@ -899,7 +883,6 @@ nav {
     background: #3a4455;
 }
 
-/* ── Product thumbnail in list ── */
 .list-item-inner {
     display: flex;
     align-items: center;
@@ -934,7 +917,6 @@ nav {
     min-width: 0;
 }
 
-/* ── Hint / helper text ── */
 .hint {
     font-size: 0.72rem;
     color: var(--muted);
@@ -946,14 +928,12 @@ nav {
     line-height: 1.5;
 }
 
-/* ── Price highlight ── */
 .price-tag {
     color: var(--accent-2);
     font-family: 'Titan One', cursive;
     font-size: 1rem;
 }
 
-/* ── Animations ── */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -966,7 +946,6 @@ nav {
     }
 }
 
-/* ── Responsive ── */
 @media (max-width: 960px) {
     .admin-shell {
         grid-template-columns: 1fr;

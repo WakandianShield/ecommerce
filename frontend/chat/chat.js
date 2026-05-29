@@ -11,7 +11,6 @@ let socket      = null;
 let reconnectTimer = null;
 let reconnectDelay = 2000;
 
-/* ── Append a message bubble ── */
 function appendMessage(content, sender) {
     removeTyping();
 
@@ -34,7 +33,6 @@ function appendMessage(content, sender) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-/* ── Typing indicator ── */
 function showTyping() {
     if (document.getElementById('typingIndicator')) return;
     const wrap = document.createElement('div');
@@ -59,13 +57,11 @@ function removeTyping() {
     document.getElementById('typingIndicator')?.remove();
 }
 
-/* ── Status helpers ── */
 function setStatus(text, connected = false) {
     chatStatus.textContent = text;
     chatStatus.className = 'status' + (connected ? ' connected' : '');
 }
 
-/* ── WebSocket ── */
 function connect() {
     clearTimeout(reconnectTimer);
     setStatus('Conectando…');
@@ -114,7 +110,6 @@ function connect() {
     });
 }
 
-/* ── Send ── */
 function sendMessage(text) {
     const message = text.trim();
     if (!message) return;

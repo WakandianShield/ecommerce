@@ -28,7 +28,7 @@ function startChatPolling(sessionId) {
                 lastMessageCount = messages.length;
                 renderChatMessages(messages);
             }
-        } catch (_) { /* silent */ }
+        } catch (_) {  }
     }, 3000);
 }
 
