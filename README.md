@@ -28,6 +28,15 @@ cd backend
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
+### Crear cuenta de administrador
+
+```bash
+cd backend
+python scripts/create_admin.py --email admin@tienda.com --password MiPassword123 --name "Admin"
+```
+
+Con la sesión iniciada como admin, el navbar del frontend muestra un icono de escudo que lleva directamente al panel de administración para gestionar productos y órdenes.
+
 ### Frontend
 
 Abre `frontend/home/index.html` directamente en el navegador o con cualquier servidor estático.

@@ -225,6 +225,27 @@ function _buildDropdown(wrapper, user) {
     }, 0);
 }
 
+function sgInjectAdminNav(user) {
+    if (!user || (user.role !== 'admin' && user.role !== 'operator')) return;
+    const navLinks = document.querySelector('.nav-links');
+    if (!navLinks) return;
+    if (navLinks.querySelector('[aria-label="Admin"]')) return;
+
+    const a = document.createElement('a');
+    a.href = '../admin/admin.html';
+    a.className = 'nav-icon';
+    a.setAttribute('aria-label', 'Admin');
+    a.title = 'Panel admin';
+    a.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 4v5c0 5-3.5 8-7 9-3.5-1-7-4-7-9V7l7-4z"></path></svg>`;
+
+    const profileLink = navLinks.querySelector('[aria-label="Perfil"]');
+    if (profileLink) {
+        navLinks.insertBefore(a, profileLink);
+    } else {
+        navLinks.appendChild(a);
+    }
+}
+
 async function sgInitDropdown() {
     const token = await sgGetToken();
     if (!token) return;
@@ -232,6 +253,7 @@ async function sgInitDropdown() {
     if (!user) return;
 
     _injectDropdownCSS();
+    sgInjectAdminNav(user);
 
     const profileLink = document.querySelector('a[aria-label="Perfil"]');
     if (!profileLink) return;

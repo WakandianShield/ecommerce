@@ -40,6 +40,7 @@ backend/
 │   ├── realtime/            # WebSocket: ConnectionManager y router
 │   └── main.py
 └── scripts/
+    ├── create_admin.py          # Crear cuenta de administrador
     └── import_category_products.py
 ```
 
@@ -65,6 +66,17 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 La API queda disponible en `http://localhost:8000` y la documentación interactiva en `http://localhost:8000/docs`.
+
+### Crear cuenta de administrador
+
+Antes de usar el panel admin del frontend, crea al menos un usuario con rol `admin`:
+
+```bash
+cd backend
+python scripts/create_admin.py --email admin@tienda.com --password MiPassword123 --name "Admin Principal"
+```
+
+Si el correo ya existe en la base de datos, el script actualiza su rol a `admin` sin cambiar la contraseña.
 
 ---
 
@@ -294,8 +306,8 @@ graph TD
     subgraph Domain
         C1[Profile / ProfileAuth]
         C2[RefreshToken]
-        C3[ProfileRepository &lt;&lt;port&gt;&gt;]
-        C4[RefreshTokenRepository &lt;&lt;port&gt;&gt;]
+        C3["ProfileRepository (port)"]
+        C4["RefreshTokenRepository (port)"]
         C5[errors.py]
     end
 
@@ -490,9 +502,9 @@ graph TD
     subgraph domain/
         C1[ChatMessage]
         C2[FaqEntry]
-        C3[ChatRepository &lt;&lt;port&gt;&gt;]
-        C4[FaqRepository &lt;&lt;port&gt;&gt;]
-        C5[FaqMatcher &lt;&lt;port&gt;&gt;]
+        C3["ChatRepository (port)"]
+        C4["FaqRepository (port)"]
+        C5["FaqMatcher (port)"]
     end
 
     subgraph infrastructure/realtime/
@@ -506,9 +518,9 @@ graph TD
     A1 --> B1
     B1 --> C3
     B1 --> C5
-    D1 ..|> C3
-    D2 ..|> C4
-    D3 ..|> C5
+    D1 -->|implementa| C3
+    D2 -->|implementa| C4
+    D3 -->|implementa| C5
     D3 --> D2
 ```
 
