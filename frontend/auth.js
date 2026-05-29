@@ -1,4 +1,4 @@
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = 'https://ecommerce-production-5088.up.railway.app';
 const ACCESS_KEY = 'sg_access_token';
 const REFRESH_KEY = 'sg_refresh_token';
 const USER_KEY = 'sg_auth_user';
