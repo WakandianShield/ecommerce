@@ -48,8 +48,6 @@ nav {
     backdrop-filter: blur(24px) saturate(160%);
     -webkit-backdrop-filter: blur(24px) saturate(160%);
     padding: 0 8%;
-    padding-left: max(8%, env(safe-area-inset-left));
-    padding-right: max(8%, env(safe-area-inset-right));
     min-height: 80px;
     position: fixed;
     display: flex;
@@ -77,18 +75,13 @@ nav {
     color: white;
     opacity: 0.7;
     transition: 0.3s;
-    width: 42px;
-    height: 42px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
 }
 
 .nav-icon:hover {
     opacity: 1;
     color: var(--accent);
     transform: scale(1.1);
+
 }
 
 .nav-links {
