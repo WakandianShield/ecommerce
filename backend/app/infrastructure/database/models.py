@@ -51,6 +51,15 @@ class ChatModel(Base):
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), index=True)
 
 
+class ChatSessionModel(Base):
+    __tablename__ = "chat_sessions"
+
+    id = Column(String(36), primary_key=True)
+    customer_name = Column(String(160))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+
 class OrderModel(Base):
     __tablename__ = "orders"
 

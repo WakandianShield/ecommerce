@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from jose import JWTError
 
 from app.application.use_cases.chat_service import ChatService
-from app.domain.entities.chat import ChatMessage
+from app.domain.entities.chat import ChatMessage, ChatSession
 from app.adapters.api.dependencies import require_roles
 from app.infrastructure.database.connection import SessionLocal
 from app.infrastructure.database.repositories import SqlAlchemyChatRepository
@@ -34,10 +34,18 @@ def _serialize_message(message: ChatMessage) -> dict:
     }
 
 
+def _serialize_session(session: ChatSession) -> dict:
+    return {
+        "id": session.id,
+        "customer_name": session.customer_name,
+        "updated_at": session.updated_at.isoformat() if session.updated_at else None,
+    }
+
+
 @router.get("/sessions")
 def list_sessions(profile=Depends(require_roles("admin", "operator"))):
     with SessionLocal() as db:
-        return {"sessions": _chat_service(db).list_sessions()}
+        return {"sessions": [_serialize_session(session) for session in _chat_service(db).list_sessions()]}
 
 
 @router.get("/sessions/{session_id}")
@@ -75,9 +83,10 @@ async def admin_reply(
 @router.websocket("/chat")
 async def chat_socket(websocket: WebSocket):
     session_id = websocket.query_params.get("session_id")
+    customer_name = websocket.query_params.get("customer_name")
     db = SessionLocal()
     service = _chat_service(db)
-    session_id = service.open_session(session_id)
+    session_id = service.open_session(session_id, customer_name)
     await _manager.connect(websocket, session_id)
     await websocket.send_json({"type": "session", "session_id": session_id})
     await websocket.send_json(
@@ -86,7 +95,9 @@ async def chat_socket(websocket: WebSocket):
             "messages": [_serialize_message(message) for message in service.list_messages(session_id)],
         }
     )
-    await _manager.broadcast_admin_json({"type": "sessions", "sessions": service.list_sessions()})
+    await _manager.broadcast_admin_json(
+        {"type": "sessions", "sessions": [_serialize_session(session) for session in service.list_sessions()]}
+    )
     try:
         while True:
             text = await websocket.receive_text()
@@ -103,7 +114,9 @@ async def chat_socket(websocket: WebSocket):
                 session_id,
                 {"type": "message", "message": _serialize_message(assistant_message)},
             )
-            await _manager.broadcast_admin_json({"type": "sessions", "sessions": service.list_sessions()})
+            await _manager.broadcast_admin_json(
+                {"type": "sessions", "sessions": [_serialize_session(session) for session in service.list_sessions()]}
+            )
     except WebSocketDisconnect:
         _manager.disconnect(session_id, websocket)
     finally:
@@ -161,7 +174,7 @@ async def admin_sessions_socket(websocket: WebSocket):
         return
 
     with SessionLocal() as db:
-        sessions = _chat_service(db).list_sessions()
+        sessions = [_serialize_session(session) for session in _chat_service(db).list_sessions()]
     await _manager.connect_admin(websocket)
     await websocket.send_json({"type": "sessions", "sessions": sessions})
     try:

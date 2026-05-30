@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import uuid
 
-from app.domain.entities.chat import ChatMessage, SENDER_ADMIN, SENDER_ASSISTANT, SENDER_CUSTOMER
+from app.domain.entities.chat import ChatMessage, ChatSession, SENDER_ADMIN, SENDER_ASSISTANT, SENDER_CUSTOMER
 from app.domain.ports.chat_repository import ChatRepository
 from app.domain.ports.faq_matcher import FaqMatcher
 from app.domain.ports.faq_repository import FaqRepository
@@ -18,10 +18,10 @@ class ChatService:
         self._faq_repo = faq_repo
         self._faq_matcher = faq_matcher
 
-    def open_session(self, session_id: str | None = None) -> str:
+    def open_session(self, session_id: str | None = None, customer_name: str | None = None) -> str:
         if not session_id:
             session_id = str(uuid.uuid4())
-        self._chat_repo.create_session(session_id)
+        self._chat_repo.create_session(session_id, customer_name)
         return session_id
 
     def handle_message(self, session_id: str, text: str) -> tuple[ChatMessage, ChatMessage]:
@@ -64,7 +64,7 @@ class ChatService:
     def list_messages(self, session_id: str) -> list[ChatMessage]:
         return self._chat_repo.list_messages(session_id)
 
-    def list_sessions(self) -> list[str]:
+    def list_sessions(self) -> list[ChatSession]:
         return self._chat_repo.list_sessions()
 
     def _build_response(self, text: str) -> str:

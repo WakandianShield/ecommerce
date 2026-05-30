@@ -8,10 +8,11 @@ from app.domain.entities.order import Order, OrderCreate, OrderItem
 from app.domain.entities.product import Product, ProductCreate, ProductUpdate
 from app.domain.entities.profile import Profile, ProfileAuth
 from app.domain.entities.refresh_token import RefreshToken
-from app.domain.entities.chat import ChatMessage
+from app.domain.entities.chat import ChatMessage, ChatSession
 from app.domain.errors import ValidationError
 from app.infrastructure.database.models import (
     ChatModel,
+    ChatSessionModel,
     OrderItemModel,
     OrderModel,
     ProductModel,
@@ -190,10 +191,36 @@ class SqlAlchemyChatRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def create_session(self, session_id: str) -> None:
-        return None
+    def create_session(self, session_id: str, customer_name: str | None = None) -> None:
+        model = self._session.get(ChatSessionModel, session_id)
+        cleaned_name = customer_name.strip() if customer_name else None
+        if model:
+            if cleaned_name and not model.customer_name:
+                model.customer_name = cleaned_name[:160]
+                self._session.commit()
+            return
+        self._session.add(
+            ChatSessionModel(
+                id=session_id,
+                customer_name=cleaned_name[:160] if cleaned_name else None,
+            )
+        )
+        self._session.commit()
 
-    def list_sessions(self) -> List[str]:
+    def list_sessions(self) -> List[ChatSession]:
+        self._backfill_sessions_from_messages()
+        stmt = select(ChatSessionModel).order_by(desc(ChatSessionModel.updated_at), ChatSessionModel.id)
+        rows = self._session.execute(stmt).scalars().all()
+        return [
+            ChatSession(
+                id=row.id,
+                customer_name=row.customer_name,
+                updated_at=row.updated_at,
+            )
+            for row in rows
+        ]
+
+    def _backfill_sessions_from_messages(self) -> None:
         last_message_at = func.max(ChatModel.created_at).label("last_message_at")
         stmt = (
             select(ChatModel.session_id, last_message_at)
@@ -201,9 +228,21 @@ class SqlAlchemyChatRepository:
             .order_by(desc(last_message_at))
         )
         rows = self._session.execute(stmt).all()
-        return [row.session_id for row in rows]
+        changed = False
+        for row in rows:
+            if self._session.get(ChatSessionModel, row.session_id):
+                continue
+            self._session.add(ChatSessionModel(id=row.session_id, updated_at=row.last_message_at))
+            changed = True
+        if changed:
+            self._session.commit()
 
     def add_message(self, session_id: str, message: ChatMessage) -> None:
+        session_model = self._session.get(ChatSessionModel, session_id)
+        if not session_model:
+            session_model = ChatSessionModel(id=session_id)
+            self._session.add(session_model)
+        session_model.updated_at = message.created_at
         model = ChatModel(
             id=message.id,
             session_id=session_id,

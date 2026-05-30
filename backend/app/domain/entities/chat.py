@@ -8,6 +8,13 @@ SENDER_ADMIN = "admin"
 
 
 @dataclass(frozen=True)
+class ChatSession:
+    id: str
+    customer_name: str | None
+    updated_at: datetime | None = None
+
+
+@dataclass(frozen=True)
 class ChatMessage:
     id: str
     session_id: str

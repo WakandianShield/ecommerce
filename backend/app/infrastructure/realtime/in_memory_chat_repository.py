@@ -2,7 +2,7 @@ from collections import defaultdict
 from threading import Lock
 from typing import List
 
-from app.domain.entities.chat import ChatMessage
+from app.domain.entities.chat import ChatMessage, ChatSession
 
 
 class InMemoryChatRepository:
@@ -10,13 +10,13 @@ class InMemoryChatRepository:
         self._messages = defaultdict(list)
         self._lock = Lock()
 
-    def create_session(self, session_id: str) -> None:
+    def create_session(self, session_id: str, customer_name: str | None = None) -> None:
         with self._lock:
             self._messages.setdefault(session_id, [])
 
-    def list_sessions(self) -> List[str]:
+    def list_sessions(self) -> List[ChatSession]:
         with self._lock:
-            return list(self._messages.keys())
+            return [ChatSession(id=session_id, customer_name=None) for session_id in self._messages.keys()]
 
     def add_message(self, session_id: str, message: ChatMessage) -> None:
         with self._lock:

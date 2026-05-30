@@ -67,9 +67,12 @@ function connect() {
     setStatus('Conectando...');
 
     const wsBase = API_BASE.replace(/^http/, 'ws');
-    const url = sessionId
-        ? `${wsBase}/realtime/chat?session_id=${sessionId}`
-        : `${wsBase}/realtime/chat`;
+    const params = new URLSearchParams();
+    if (sessionId) params.set('session_id', sessionId);
+    const user = typeof sgGetUser === 'function' ? sgGetUser() : null;
+    const customerName = user?.fullName || user?.full_name || user?.email || 'Cliente';
+    params.set('customer_name', customerName);
+    const url = `${wsBase}/realtime/chat?${params.toString()}`;
 
     socket = new WebSocket(url);
 

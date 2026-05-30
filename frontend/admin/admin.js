@@ -321,12 +321,26 @@ function renderSessions(sessions) {
         chatSessions.innerHTML = '<p style="font-size:0.8rem;color:var(--muted);padding:8px">Sin sesiones activas.</p>';
         return;
     }
-    chatSessions.innerHTML = sessions.map((session) => `
-        <div class="session-item ${session === activeSession ? 'active' : ''}" data-session="${session}">
+    chatSessions.innerHTML = sessions.map((session) => {
+        const sessionId = typeof session === 'string' ? session : session.id;
+        const rawName = typeof session === 'string' ? '' : session.customer_name;
+        const sessionName = rawName || `Cliente ${sessionId.slice(0, 8)}`;
+        return `
+        <div class="session-item ${sessionId === activeSession ? 'active' : ''}" data-session="${sessionId}">
             <span class="session-dot"></span>
-            <span class="session-name">${session}</span>
-        </div>
-    `).join('');
+            <span class="session-name">${escapeHtml(sessionName)}</span>
+        </div>`;
+    }).join('');
+}
+
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+    }[char]));
 }
 
 function appendChatMessage(msg) {
