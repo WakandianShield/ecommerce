@@ -38,6 +38,7 @@ def _serialize_session(session: ChatSession) -> dict:
     return {
         "id": session.id,
         "customer_name": session.customer_name,
+        "profile_id": session.profile_id,
         "updated_at": session.updated_at.isoformat() if session.updated_at else None,
     }
 
@@ -106,7 +107,7 @@ async def chat_socket(websocket: WebSocket):
         await websocket.close(code=1008)
         return
     service = _chat_service(db)
-    session_id = service.open_session(session_id, profile.full_name)
+    session_id = service.open_session(session_id, profile.full_name, profile.id)
     await _manager.connect(websocket, session_id)
     await websocket.send_json({"type": "session", "session_id": session_id})
     await websocket.send_json(

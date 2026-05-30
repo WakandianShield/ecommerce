@@ -11,6 +11,7 @@ let socket      = null;
 let reconnectTimer = null;
 let reconnectDelay = 2000;
 let messageIds = new Set();
+let refreshedAfterPolicyClose = false;
 
 function goToLogin() {
     window.location.href = '../login/login.html';
@@ -90,9 +91,21 @@ async function connect() {
         reconnectDelay = 2000;
     });
 
-    socket.addEventListener('close', () => {
+    socket.addEventListener('close', async (event) => {
         if (!localStorage.getItem('sg_access_token')) {
             setStatus('Inicia sesion');
+            return;
+        }
+        if (event.code === 1008) {
+            if (!refreshedAfterPolicyClose && typeof sgRefreshAccessToken === 'function') {
+                refreshedAfterPolicyClose = true;
+                const refreshedToken = await sgRefreshAccessToken();
+                if (refreshedToken) {
+                    reconnectTimer = setTimeout(connect, 350);
+                    return;
+                }
+            }
+            setStatus('Sesion expirada');
             return;
         }
         setStatus('Reconectando...');
@@ -101,7 +114,7 @@ async function connect() {
     });
 
     socket.addEventListener('error', () => {
-        socket.close();
+        if (socket && socket.readyState !== WebSocket.CLOSED) socket.close();
     });
 
     socket.addEventListener('message', (event) => {
@@ -112,6 +125,7 @@ async function connect() {
         if (payload.type === 'session') {
             sessionId = payload.session_id;
             localStorage.setItem(SESSION_KEY, sessionId);
+            refreshedAfterPolicyClose = false;
             return;
         }
 

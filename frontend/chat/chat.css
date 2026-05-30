@@ -22,6 +22,7 @@ body {
     color: var(--text-main);
     overflow: hidden;
     height: 100vh;
+    height: 100dvh;
     padding-top: 80px;
 }
 
@@ -47,6 +48,8 @@ nav {
     backdrop-filter: blur(24px) saturate(160%);
     -webkit-backdrop-filter: blur(24px) saturate(160%);
     padding: 0 8%;
+    padding-left: max(8%, env(safe-area-inset-left));
+    padding-right: max(8%, env(safe-area-inset-right));
     min-height: 80px;
     position: fixed;
     display: flex;
@@ -74,6 +77,12 @@ nav {
     color: white;
     opacity: 0.7;
     transition: 0.3s;
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
 }
 
 .nav-icon:hover {
@@ -89,7 +98,8 @@ nav {
 
 .page {
     height: calc(100vh - 80px);
-    padding: 16px 8% 20px;
+    height: calc(100dvh - 80px);
+    padding: 16px max(8%, env(safe-area-inset-left)) max(20px, env(safe-area-inset-bottom)) max(8%, env(safe-area-inset-right));
     display: flex;
     align-items: stretch;
     max-width: 1200px;
@@ -107,6 +117,7 @@ nav {
     border: 1px solid var(--glass-border);
     border-radius: 28px;
     overflow: hidden;
+    min-height: 0;
     box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
     animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
@@ -138,6 +149,7 @@ nav {
     display: flex;
     align-items: center;
     gap: 14px;
+    min-width: 0;
 }
 
 .chip-icon {
@@ -148,12 +160,14 @@ nav {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    min-width: 0;
 }
 
 .chat-header h1 {
     margin: 0;
     font-family: 'Titan One', cursive;
     font-size: 1.15rem;
+    overflow-wrap: anywhere;
     background: linear-gradient(to right, #fff, #94a3b8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -181,6 +195,8 @@ nav {
     text-transform: uppercase;
     letter-spacing: 0.14em;
     transition: all 0.3s;
+    flex: 0 0 auto;
+    white-space: nowrap;
 }
 
 .status::before {
@@ -215,6 +231,7 @@ nav {
     position: relative;
     z-index: 1;
     scrollbar-width: none;
+    scroll-snap-type: x proximity;
 }
 
 .faq-quick::-webkit-scrollbar {
@@ -237,6 +254,7 @@ nav {
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    scroll-snap-align: start;
 }
 
 .chip-icon {
@@ -328,6 +346,7 @@ nav {
 
 .chat-form input {
     flex: 1;
+    min-width: 0;
     padding: 12px 18px;
     border-radius: 999px;
     border: 1px solid var(--glass-border);
@@ -461,8 +480,13 @@ nav {
 }
 
 @media (max-width: 900px) {
+    nav {
+        padding-left: max(4%, env(safe-area-inset-left));
+        padding-right: max(4%, env(safe-area-inset-right));
+    }
+
     .page {
-        padding: 10px 4% 10px;
+        padding: 10px max(4%, env(safe-area-inset-left)) max(10px, env(safe-area-inset-bottom)) max(4%, env(safe-area-inset-right));
     }
 
     .chat-header {
@@ -475,11 +499,116 @@ nav {
 }
 
 @media (max-width: 600px) {
+    body {
+        padding-top: 64px;
+    }
+
+    nav {
+        min-height: 64px;
+    }
+
+    .logo {
+        width: 34px;
+        height: 34px;
+    }
+
+    .nav-links {
+        gap: 4px;
+    }
+
+    .nav-icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .page {
+        height: calc(100vh - 64px);
+        height: calc(100dvh - 64px);
+        padding: 8px max(3%, env(safe-area-inset-left)) max(8px, env(safe-area-inset-bottom)) max(3%, env(safe-area-inset-right));
+    }
+
+    .chat-card {
+        border-radius: 18px;
+    }
+
+    .chat-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+        padding: 13px 14px;
+    }
+
+    .chat-header h1 {
+        font-size: 1rem;
+    }
+
+    .eyebrow {
+        font-size: 0.58rem;
+    }
+
+    .status {
+        max-width: 100%;
+        font-size: 0.62rem;
+        letter-spacing: 0.1em;
+    }
+
+    .faq-quick {
+        gap: 7px;
+        padding: 9px 12px;
+    }
+
+    .faq-chip {
+        padding: 7px 11px;
+        font-size: 0.72rem;
+    }
+
+    .chat-messages {
+        gap: 8px;
+        padding: 14px 12px;
+    }
+
     .message {
-        max-width: 85%;
+        max-width: 92%;
+        padding: 10px 13px;
+        font-size: 0.86rem;
     }
 
     .chat-form {
-        padding: 10px 14px;
+        gap: 8px;
+        padding: 10px 12px;
+    }
+
+    .chat-form input {
+        padding: 11px 14px;
+        font-size: 0.86rem;
+    }
+
+    .btn-send {
+        width: 42px;
+        height: 42px;
+    }
+}
+
+@media (max-width: 380px) {
+    .nav-icon {
+        width: 34px;
+        height: 34px;
+    }
+
+    .nav-icon svg {
+        width: 19px;
+        height: 19px;
+    }
+
+    .chat-header {
+        padding: 12px;
+    }
+
+    .chat-form {
+        padding: 8px 10px;
+    }
+
+    .message {
+        max-width: 96%;
     }
 }

@@ -55,6 +55,7 @@ class ChatSessionModel(Base):
     __tablename__ = "chat_sessions"
 
     id = Column(String(36), primary_key=True)
+    profile_id = Column(String(36), ForeignKey("profiles.id"), nullable=True, index=True)
     customer_name = Column(String(160))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)

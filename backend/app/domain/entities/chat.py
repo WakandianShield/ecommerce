@@ -11,6 +11,7 @@ SENDER_ADMIN = "admin"
 class ChatSession:
     id: str
     customer_name: str | None
+    profile_id: str | None = None
     updated_at: datetime | None = None
 
 

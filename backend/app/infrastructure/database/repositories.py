@@ -192,24 +192,64 @@ class SqlAlchemyChatRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def create_session(self, session_id: str, customer_name: str | None = None) -> None:
+    def create_session(
+        self,
+        session_id: str,
+        customer_name: str | None = None,
+        profile_id: str | None = None,
+    ) -> None:
         cleaned_name = customer_name.strip() if customer_name else None
         try:
             model = self._session.get(ChatSessionModel, session_id)
             if model:
+                changed = False
                 if cleaned_name and model.customer_name != cleaned_name:
                     model.customer_name = cleaned_name[:160]
+                    changed = True
+                if profile_id and model.profile_id != profile_id:
+                    model.profile_id = profile_id
+                    changed = True
+                if changed:
                     self._session.commit()
                 return
             self._session.add(
                 ChatSessionModel(
                     id=session_id,
+                    profile_id=profile_id,
                     customer_name=cleaned_name[:160] if cleaned_name else None,
                 )
             )
             self._session.commit()
         except SQLAlchemyError:
             self._session.rollback()
+
+    def get_session_for_profile(self, profile_id: str, customer_name: str | None = None) -> ChatSession | None:
+        cleaned_name = customer_name.strip() if customer_name else None
+        stmt = (
+            select(ChatSessionModel)
+            .where(ChatSessionModel.profile_id == profile_id)
+            .order_by(desc(ChatSessionModel.updated_at), desc(ChatSessionModel.created_at))
+        )
+        model = self._session.execute(stmt).scalars().first()
+        if model:
+            if cleaned_name and model.customer_name != cleaned_name:
+                model.customer_name = cleaned_name[:160]
+                self._session.commit()
+            return self._session_to_entity(model)
+
+        if not cleaned_name:
+            return None
+        legacy_stmt = (
+            select(ChatSessionModel)
+            .where(ChatSessionModel.profile_id.is_(None), ChatSessionModel.customer_name == cleaned_name[:160])
+            .order_by(desc(ChatSessionModel.updated_at), desc(ChatSessionModel.created_at))
+        )
+        legacy_model = self._session.execute(legacy_stmt).scalars().first()
+        if not legacy_model:
+            return None
+        legacy_model.profile_id = profile_id
+        self._session.commit()
+        return self._session_to_entity(legacy_model)
 
     def list_sessions(self) -> List[ChatSession]:
         try:
@@ -250,7 +290,15 @@ class SqlAlchemyChatRepository:
             if include_names:
                 session_model = self._session.get(ChatSessionModel, row.session_id)
                 customer_name = session_model.customer_name if session_model else None
-            sessions.append(ChatSession(id=row.session_id, customer_name=customer_name, updated_at=row.last_message_at))
+            profile_id = session_model.profile_id if include_names and session_model else None
+            sessions.append(
+                ChatSession(
+                    id=row.session_id,
+                    customer_name=customer_name,
+                    profile_id=profile_id,
+                    updated_at=row.last_message_at,
+                )
+            )
         return sessions
 
     def add_message(self, session_id: str, message: ChatMessage) -> None:
@@ -291,6 +339,15 @@ class SqlAlchemyChatRepository:
             sender=model.sender,
             content=model.content,
             created_at=model.created_at,
+        )
+
+    @staticmethod
+    def _session_to_entity(model: ChatSessionModel) -> ChatSession:
+        return ChatSession(
+            id=model.id,
+            customer_name=model.customer_name,
+            profile_id=model.profile_id,
+            updated_at=model.updated_at,
         )
 
 

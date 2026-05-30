@@ -18,10 +18,19 @@ class ChatService:
         self._faq_repo = faq_repo
         self._faq_matcher = faq_matcher
 
-    def open_session(self, session_id: str | None = None, customer_name: str | None = None) -> str:
+    def open_session(
+        self,
+        session_id: str | None = None,
+        customer_name: str | None = None,
+        profile_id: str | None = None,
+    ) -> str:
+        if not session_id and profile_id:
+            existing_session = self._chat_repo.get_session_for_profile(profile_id, customer_name)
+            if existing_session:
+                return existing_session.id
         if not session_id:
             session_id = str(uuid.uuid4())
-        self._chat_repo.create_session(session_id, customer_name)
+        self._chat_repo.create_session(session_id, customer_name, profile_id)
         return session_id
 
     def handle_message(self, session_id: str, text: str) -> tuple[ChatMessage, ChatMessage]:
