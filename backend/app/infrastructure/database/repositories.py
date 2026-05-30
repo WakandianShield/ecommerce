@@ -2,6 +2,7 @@ from typing import List, Optional
 import uuid
 
 from sqlalchemy import desc, func, select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.domain.entities.order import Order, OrderCreate, OrderItem
@@ -192,33 +193,33 @@ class SqlAlchemyChatRepository:
         self._session = session
 
     def create_session(self, session_id: str, customer_name: str | None = None) -> None:
-        model = self._session.get(ChatSessionModel, session_id)
         cleaned_name = customer_name.strip() if customer_name else None
-        if model:
-            if cleaned_name and not model.customer_name:
-                model.customer_name = cleaned_name[:160]
-                self._session.commit()
-            return
-        self._session.add(
-            ChatSessionModel(
-                id=session_id,
-                customer_name=cleaned_name[:160] if cleaned_name else None,
+        try:
+            model = self._session.get(ChatSessionModel, session_id)
+            if model:
+                if cleaned_name and (
+                    not model.customer_name or model.customer_name == "Cliente" or model.customer_name.startswith("Cliente ")
+                ):
+                    model.customer_name = cleaned_name[:160]
+                    self._session.commit()
+                return
+            self._session.add(
+                ChatSessionModel(
+                    id=session_id,
+                    customer_name=cleaned_name[:160] if cleaned_name else None,
+                )
             )
-        )
-        self._session.commit()
+            self._session.commit()
+        except SQLAlchemyError:
+            self._session.rollback()
 
     def list_sessions(self) -> List[ChatSession]:
-        self._backfill_sessions_from_messages()
-        stmt = select(ChatSessionModel).order_by(desc(ChatSessionModel.updated_at), ChatSessionModel.id)
-        rows = self._session.execute(stmt).scalars().all()
-        return [
-            ChatSession(
-                id=row.id,
-                customer_name=row.customer_name,
-                updated_at=row.updated_at,
-            )
-            for row in rows
-        ]
+        try:
+            self._backfill_sessions_from_messages()
+            return self._list_sessions_from_messages(include_names=True)
+        except SQLAlchemyError:
+            self._session.rollback()
+            return self._list_sessions_from_messages()
 
     def _backfill_sessions_from_messages(self) -> None:
         last_message_at = func.max(ChatModel.created_at).label("last_message_at")
@@ -237,12 +238,34 @@ class SqlAlchemyChatRepository:
         if changed:
             self._session.commit()
 
+    def _list_sessions_from_messages(self, include_names: bool = False) -> List[ChatSession]:
+        last_message_at = func.max(ChatModel.created_at).label("last_message_at")
+        stmt = (
+            select(ChatModel.session_id, last_message_at)
+            .group_by(ChatModel.session_id)
+            .order_by(desc(last_message_at))
+        )
+        rows = self._session.execute(stmt).all()
+        sessions = []
+        for row in rows:
+            customer_name = None
+            if include_names:
+                session_model = self._session.get(ChatSessionModel, row.session_id)
+                customer_name = session_model.customer_name if session_model else None
+            sessions.append(ChatSession(id=row.session_id, customer_name=customer_name, updated_at=row.last_message_at))
+        return sessions
+
     def add_message(self, session_id: str, message: ChatMessage) -> None:
-        session_model = self._session.get(ChatSessionModel, session_id)
-        if not session_model:
-            session_model = ChatSessionModel(id=session_id)
-            self._session.add(session_model)
-        session_model.updated_at = message.created_at
+        try:
+            session_model = self._session.get(ChatSessionModel, session_id)
+            if not session_model:
+                session_model = ChatSessionModel(id=session_id)
+                self._session.add(session_model)
+            session_model.updated_at = message.created_at
+            self._session.flush()
+        except SQLAlchemyError:
+            self._session.rollback()
+
         model = ChatModel(
             id=message.id,
             session_id=session_id,
