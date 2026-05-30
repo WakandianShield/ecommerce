@@ -12,6 +12,10 @@ let reconnectTimer = null;
 let reconnectDelay = 2000;
 let messageIds = new Set();
 
+function goToLogin() {
+    window.location.href = '../login/login.html';
+}
+
 function appendMessage(content, sender, id = null) {
     if (id && messageIds.has(id)) return;
     if (id) messageIds.add(id);
@@ -62,16 +66,21 @@ function setStatus(text, connected = false) {
     chatStatus.className = 'status' + (connected ? ' connected' : '');
 }
 
-function connect() {
+async function connect() {
     clearTimeout(reconnectTimer);
     setStatus('Conectando...');
+    const token = typeof sgGetToken === 'function' ? await sgGetToken() : null;
+    const user = typeof sgGetUser === 'function' ? sgGetUser() : null;
+    if (!token || !user) {
+        setStatus('Inicia sesion');
+        socket = null;
+        return;
+    }
 
     const wsBase = API_BASE.replace(/^http/, 'ws');
     const params = new URLSearchParams();
     if (sessionId) params.set('session_id', sessionId);
-    const user = typeof sgGetUser === 'function' ? sgGetUser() : null;
-    const customerName = user?.fullName || user?.full_name || user?.email || 'Cliente';
-    params.set('customer_name', customerName);
+    params.set('token', token);
     const url = `${wsBase}/realtime/chat?${params.toString()}`;
 
     socket = new WebSocket(url);
@@ -82,6 +91,10 @@ function connect() {
     });
 
     socket.addEventListener('close', () => {
+        if (!localStorage.getItem('sg_access_token')) {
+            setStatus('Inicia sesion');
+            return;
+        }
         setStatus('Reconectando...');
         reconnectTimer = setTimeout(connect, reconnectDelay);
         reconnectDelay = Math.min(reconnectDelay * 1.5, 15000);
@@ -121,8 +134,13 @@ function connect() {
 function sendMessage(text) {
     const message = text.trim();
     if (!message) return;
+    const user = typeof sgGetUser === 'function' ? sgGetUser() : null;
+    if (!user) {
+        goToLogin();
+        return;
+    }
     if (!socket || socket.readyState !== WebSocket.OPEN) {
-        appendMessage('Conectando... intenta de nuevo en un momento.', 'assistant');
+        connect();
         return;
     }
     socket.send(message);
@@ -139,6 +157,11 @@ if (faqQuick) {
     faqQuick.addEventListener('click', (event) => {
         const button = event.target.closest('[data-question]');
         if (!button) return;
+        const user = typeof sgGetUser === 'function' ? sgGetUser() : null;
+        if (!user) {
+            goToLogin();
+            return;
+        }
         sendMessage(button.dataset.question || button.textContent.trim());
     });
 }

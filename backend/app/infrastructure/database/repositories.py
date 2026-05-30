@@ -197,9 +197,7 @@ class SqlAlchemyChatRepository:
         try:
             model = self._session.get(ChatSessionModel, session_id)
             if model:
-                if cleaned_name and (
-                    not model.customer_name or model.customer_name == "Cliente" or model.customer_name.startswith("Cliente ")
-                ):
+                if cleaned_name and model.customer_name != cleaned_name:
                     model.customer_name = cleaned_name[:160]
                     self._session.commit()
                 return

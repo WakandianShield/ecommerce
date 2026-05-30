@@ -86,7 +86,7 @@ function sgSetAuth(accessToken, refreshToken, user) {
 }
 
 function sgClearAuth() {
-    [ACCESS_KEY, REFRESH_KEY, USER_KEY, EXP_KEY, 'sg_auth_token', 'sg_auth_exp']
+    [ACCESS_KEY, REFRESH_KEY, USER_KEY, EXP_KEY, 'sg_chat_session_id', 'sg_auth_token', 'sg_auth_exp']
         .forEach(k => localStorage.removeItem(k));
 }
 

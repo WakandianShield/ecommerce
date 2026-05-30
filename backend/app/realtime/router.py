@@ -6,7 +6,7 @@ from app.application.use_cases.chat_service import ChatService
 from app.domain.entities.chat import ChatMessage, ChatSession
 from app.adapters.api.dependencies import require_roles
 from app.infrastructure.database.connection import SessionLocal
-from app.infrastructure.database.repositories import SqlAlchemyChatRepository
+from app.infrastructure.database.repositories import SqlAlchemyChatRepository, SqlAlchemyProfileRepository
 from app.infrastructure.realtime.in_memory_faq_repository import InMemoryFaqRepository
 from app.infrastructure.realtime.simple_faq_matcher import SimpleFaqMatcher
 from app.infrastructure.security.token_service import TokenService
@@ -40,6 +40,21 @@ def _serialize_session(session: ChatSession) -> dict:
         "customer_name": session.customer_name,
         "updated_at": session.updated_at.isoformat() if session.updated_at else None,
     }
+
+
+def _get_profile_from_ws_token(db, token: str | None):
+    if not token:
+        return None
+    try:
+        payload = TokenService().decode_token(token)
+    except JWTError:
+        return None
+    if payload.get("type") != "access":
+        return None
+    profile_id = payload.get("sub")
+    if not profile_id:
+        return None
+    return SqlAlchemyProfileRepository(db).get_by_id(profile_id)
 
 
 @router.get("/sessions")
@@ -83,10 +98,15 @@ async def admin_reply(
 @router.websocket("/chat")
 async def chat_socket(websocket: WebSocket):
     session_id = websocket.query_params.get("session_id")
-    customer_name = websocket.query_params.get("customer_name")
+    token = websocket.query_params.get("token")
     db = SessionLocal()
+    profile = _get_profile_from_ws_token(db, token)
+    if not profile:
+        db.close()
+        await websocket.close(code=1008)
+        return
     service = _chat_service(db)
-    session_id = service.open_session(session_id, customer_name)
+    session_id = service.open_session(session_id, profile.full_name)
     await _manager.connect(websocket, session_id)
     await websocket.send_json({"type": "session", "session_id": session_id})
     await websocket.send_json(
