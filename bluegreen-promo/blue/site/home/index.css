@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Titan+One&family=Plus+Jakarta+Sans:wght@300;400;700&display=swap');
 
 :root {
-    --bg-dark: #05060a;
+    --bg-dark: #000000;
     --card-bg: rgba(15, 17, 26, 0.5);
     --accent: #4f7df3;
     --accent-2: #3dd6c1;
@@ -94,8 +94,8 @@ nav {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(0deg, var(--bg-dark) 5%, transparent 50%),
-        radial-gradient(circle, transparent 20%, var(--bg-dark) 100%);
+    background: linear-gradient(0deg, black 5%, transparent 50%),
+        radial-gradient(circle, transparent 20%, black 100%);
     z-index: -1;
 }
 

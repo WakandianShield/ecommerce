@@ -4,6 +4,7 @@ const REFRESH_KEY = 'sg_refresh_token';
 const USER_KEY = 'sg_auth_user';
 const EXP_KEY = 'sg_access_exp';
 
+
 function _decodeBase64Url(input) {
     const normalized = input.replace(/-/g, '+').replace(/_/g, '/');
     const pad = normalized.length % 4 === 0 ? '' : '='.repeat(4 - (normalized.length % 4));
