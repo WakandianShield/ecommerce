@@ -22,6 +22,69 @@ function saveCart(items) {
     localStorage.setItem(CART_KEY, JSON.stringify(items));
 }
 
+function updateCartCounter() {
+    const cart = getCart();
+    const count = cart.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
+    const cartLink = document.querySelector('a[aria-label="Carrito"]');
+    if (!cartLink) return;
+
+    cartLink.style.position = 'relative';
+    let badge = cartLink.querySelector('.cart-badge');
+    
+    if (count > 0) {
+        if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'cart-badge';
+            _injectToastCSS();
+            cartLink.appendChild(badge);
+        }
+        badge.textContent = count;
+    } else if (badge) {
+        badge.remove();
+    }
+}
+
+function showToast(message) {
+    _injectToastCSS();
+    let container = document.getElementById('sg-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'sg-toast-container';
+        container.className = 'sg-toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = 'sg-toast';
+    toast.textContent = message;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add('is-hidden');
+        setTimeout(() => toast.remove(), 400);
+    }, 2500);
+}
+
+function _injectToastCSS() {
+    if (document.getElementById('sg-toast-style')) return;
+    const s = document.createElement('style');
+    s.id = 'sg-toast-style';
+    s.textContent = `
+        .sg-toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .sg-toast { background: #080a12; color: #fff; padding: 14px 24px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 40px rgba(0,0,0,0.4); font-size: 0.9rem; font-weight: 600; backdrop-filter: blur(10px); animation: sgToastIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .sg-toast.is-hidden { animation: sgToastOut 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes sgToastIn { from { opacity: 0; transform: translateX(30px) scale(0.9); } to { opacity: 1; transform: translateX(0) scale(1); } }
+        @keyframes sgToastOut { from { opacity: 1; transform: translateX(0) scale(1); } to { opacity: 0; transform: translateX(30px) scale(0.9); } }
+        .cart-badge {
+            position: absolute; top: -4px; right: -6px; background: #ff4b5c; color: white;
+            font-size: 10px; min-width: 17px; height: 17px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-weight: 700;
+            border: 2px solid #05060a; padding: 0 4px;
+        }
+    `;
+    document.head.appendChild(s);
+}
+
 function ensureStockModal() {
     let modal = document.getElementById(STOCK_MODAL_ID);
     if (modal) return modal;
@@ -87,6 +150,8 @@ function addToCart(product) {
         });
     }
     saveCart(cart);
+    updateCartCounter();
+    showToast(`"${product.name}" agregado al carrito`);
 }
 
 function canAddToCart(product) {
@@ -183,6 +248,7 @@ async function loadCatalog() {
         products = Array.isArray(data) ? data.filter(p => p.is_active !== false) : [];
         buildCategories();
         applyFilters();
+        updateCartCounter();
     } catch (err) {
         grid.innerHTML = `<div class="state-card">${err.message}</div>`;
     }
