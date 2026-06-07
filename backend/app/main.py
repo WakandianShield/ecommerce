@@ -6,7 +6,7 @@ from pathlib import Path
 from app.adapters.api.routers import orders, products, profiles, sessions
 from app.infrastructure.database import models as _models
 from app.infrastructure.database.connection import init_db
-from app.realtime.router import router as realtime_router
+from app.adapters.websocket.router import router as realtime_router
 
 
 app = FastAPI(title="E-Commerce API", version="1.0.0")

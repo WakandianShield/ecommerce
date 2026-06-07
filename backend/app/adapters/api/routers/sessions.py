@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from app.adapters.api.dependencies import get_db
 from app.adapters.api.schemas import ProfileOut, RefreshTokenIn, SessionIn, SessionOut
 from app.application.use_cases.session_service import SessionService
-from app.domain.entities.profile import Profile
 from app.domain.errors import AuthError
 from app.infrastructure.database.repositories import (
     SqlAlchemyProfileRepository,
@@ -26,10 +25,9 @@ def create_session(payload: SessionIn, db: Session = Depends(get_db)):
         SqlAlchemyRefreshTokenRepository(db),
     )
     try:
-        access_token, refresh_token, auth = service.login(payload.email, payload.password)
+        access_token, refresh_token, profile = service.login(payload.email, payload.password)
     except AuthError as exc:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc))
-    profile = Profile(id=auth.id, full_name=auth.full_name, email=auth.email, role=auth.role)
     return SessionOut(
         access_token=access_token,
         refresh_token=refresh_token,

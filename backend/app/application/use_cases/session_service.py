@@ -36,19 +36,15 @@ class SessionService:
         self._token_service = token_service
         self._refresh_repo = refresh_repo
 
-    def login(self, email: str, password: str):
+    def login(self, email: str, password: str) -> tuple[str, str, Profile]:
         auth = self._repo.get_auth_by_email(email)
         if not auth:
             raise AuthError("Invalid credentials")
         if not self._hasher.verify(password, auth.password_hash):
             raise AuthError("Invalid credentials")
-        access_token, refresh_token = self.issue_tokens(Profile(
-            id=auth.id,
-            full_name=auth.full_name,
-            email=auth.email,
-            role=auth.role,
-        ))
-        return access_token, refresh_token, auth
+        profile = Profile(id=auth.id, full_name=auth.full_name, email=auth.email, role=auth.role)
+        access_token, refresh_token = self.issue_tokens(profile)
+        return access_token, refresh_token, profile
 
     def issue_tokens(self, profile: Profile) -> tuple[str, str]:
         access_token = self._token_service.create_access_token(profile.id, profile.role)

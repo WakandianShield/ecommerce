@@ -2,15 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisco
 from pydantic import BaseModel
 from jose import JWTError
 
+from app.adapters.websocket.connection_manager import ConnectionManager
 from app.application.use_cases.chat_service import ChatService
 from app.domain.entities.chat import ChatMessage, ChatSession
 from app.adapters.api.dependencies import require_roles
 from app.infrastructure.database.connection import SessionLocal
 from app.infrastructure.database.repositories import SqlAlchemyChatRepository, SqlAlchemyProfileRepository
-from app.infrastructure.realtime.in_memory_faq_repository import InMemoryFaqRepository
-from app.infrastructure.realtime.simple_faq_matcher import SimpleFaqMatcher
+from app.infrastructure.memory.faq_repository import InMemoryFaqRepository
+from app.infrastructure.memory.faq_matcher import SimpleFaqMatcher
 from app.infrastructure.security.token_service import TokenService
-from app.realtime.connection_manager import ConnectionManager
 
 
 router = APIRouter(prefix="/realtime", tags=["realtime"])

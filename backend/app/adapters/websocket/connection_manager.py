@@ -28,9 +28,6 @@ class ConnectionManager:
     def disconnect_admin(self, websocket: WebSocket) -> None:
         self._admin_connections.discard(websocket)
 
-    async def send_json(self, session_id: str, payload: dict) -> None:
-        await self.broadcast_json(session_id, payload)
-
     async def broadcast_json(self, session_id: str, payload: dict) -> None:
         sockets = list(self._connections.get(session_id, set()))
         for websocket in sockets:

@@ -19,13 +19,14 @@ router = APIRouter(prefix="/profiles", tags=["profiles"])
 
 @router.post("", response_model=SessionOut, status_code=status.HTTP_201_CREATED)
 def register_profile(payload: ProfileCreateIn, db: Session = Depends(get_db)):
-    service = ProfileService(SqlAlchemyProfileRepository(db), PasswordHasher())
+    profile_repo = SqlAlchemyProfileRepository(db)
+    service = ProfileService(profile_repo, PasswordHasher())
     try:
         profile = service.register(payload.full_name, payload.email, payload.password)
     except ValidationError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
     session_service = SessionService(
-        SqlAlchemyProfileRepository(db),
+        profile_repo,
         PasswordHasher(),
         TokenService(),
         SqlAlchemyRefreshTokenRepository(db),
