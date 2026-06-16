@@ -43,6 +43,14 @@
     </header>
 
     <main class="container" id="catalogo">
+        <div id="auth-error-container" style="display: none; border: 1px solid #ff4444; border-radius: 8px; padding: 15px; margin-bottom: 20px; background-color: #fff5f5;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="background-color: #ff4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">ERROR</span>
+                <strong id="error-title" style="color: #cc0000; font-family: 'Plus Jakarta Sans', sans-serif;"></strong>
+            </div>
+            <p id="error-desc" style="margin: 8px 0 0 0; color: #555; font-size: 0.9rem; line-height: 1.4;"></p>
+        </div>
+
         <div class="section-header">
             <h2 class="section-title">Nuestras Categorías</h2>
             <div class="title-underline"></div>

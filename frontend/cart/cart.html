@@ -231,14 +231,17 @@
                 else { cart.splice(idx, 1); }
                 saveCart(cart);
                 render();
+                if (typeof sgUpdateCartBadge === 'function') sgUpdateCartBadge();
             } else if (e.target.closest('.qty-inc')) {
                 cart[idx].qty++;
                 saveCart(cart);
                 render();
+                if (typeof sgUpdateCartBadge === 'function') sgUpdateCartBadge();
             } else if (e.target.closest('.remove-btn')) {
                 cart.splice(idx, 1);
                 saveCart(cart);
                 render();
+                if (typeof sgUpdateCartBadge === 'function') sgUpdateCartBadge();
             }
         });
 

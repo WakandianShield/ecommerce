@@ -40,6 +40,7 @@ function addToCart(name, price, img, productId) {
         cart.push({ product_id: productId || null, name, price, qty: 1, img: img || '' });
     }
     saveCart(cart);
+    if (typeof sgUpdateCartBadge === 'function') sgUpdateCartBadge();
     showToast(`"${name}" agregado al carrito`);
 }
 

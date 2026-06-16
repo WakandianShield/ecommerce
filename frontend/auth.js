@@ -270,4 +270,64 @@ async function sgInitDropdown() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => { sgInitDropdown(); });
+function sgCartCount() {
+    try {
+        const items = JSON.parse(localStorage.getItem('sg_cart_items') || '[]');
+        return items.reduce((sum, item) => sum + (item.qty || 1), 0);
+    } catch { return 0; }
+}
+
+function sgUpdateCartBadge() {
+    const badge = document.getElementById('sg-cart-badge');
+    if (!badge) return;
+    const count = sgCartCount();
+    badge.textContent = count > 99 ? '99+' : count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+}
+
+function sgInitCartBadge() {
+    const cartLink = document.querySelector('a[aria-label="Carrito"]');
+    if (!cartLink || document.getElementById('sg-cart-badge')) return;
+
+    cartLink.style.position = 'relative';
+
+    const style = document.createElement('style');
+    style.textContent = `
+        #sg-cart-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 4px;
+            border-radius: 999px;
+            background: #e63946;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            line-height: 1;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+    `;
+    document.head.appendChild(style);
+
+    const badge = document.createElement('span');
+    badge.id = 'sg-cart-badge';
+    cartLink.appendChild(badge);
+
+    sgUpdateCartBadge();
+
+    window.addEventListener('storage', e => {
+        if (e.key === 'sg_cart_items') sgUpdateCartBadge();
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    sgInitDropdown();
+    sgInitCartBadge();
+});

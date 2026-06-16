@@ -42,8 +42,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         hideError();
     }
 
-    function showError(msg) {
-        errBox.textContent = msg;
+    function showError(type, msg) {
+        errBox.innerHTML = `
+            <strong style="display: block; font-size: 0.75rem; text-transform: uppercase; color: #dc2626; margin-bottom: 2px;">Error de ${type}</strong>
+            <span style="font-size: 0.9rem; color: #4b5563;">${msg}</span>
+        `;
         errBox.style.display = '';
     }
 
@@ -73,9 +76,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         const password = passInput.value;
         const fullName = nameInput.value.trim();
 
-        if (!email || !password) return;
+        if (!email || !password) {
+            showError('Entrada', 'El correo y la contraseña son obligatorios.');
+            return;
+        }
+
+        if (password.length < 6) {
+            showError('Validación', 'La contraseña es demasiado corta (mínimo 6 caracteres).');
+            return;
+        }
+
         if (mode === 'signup' && !fullName) {
-            showError('Por favor ingresa tu nombre completo.');
+            showError('Validación', 'Debes ingresar tu nombre completo para registrarte.');
             return;
         }
 
@@ -91,7 +103,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             sgSetAuth(access_token, refresh_token, profile);
             window.location.replace('../home/index.html');
         } catch (err) {
-            showError(err.message || 'Error al conectar con el servidor.');
+            const msg = err.message || '';
+            let type = 'Servidor';
+
+            if (msg.includes('401') || msg.toLowerCase().includes('invalid')) type = 'Credenciales';
+            else if (msg.includes('409') || msg.toLowerCase().includes('exists')) type = 'Registro';
+            else if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network')) type = 'Conexión';
+            else if (msg.toLowerCase().includes('password') || msg.toLowerCase().includes('email')) type = 'Validación';
+
+            showError(type, msg || 'Ocurrió un problema al procesar tu solicitud.');
         } finally {
             setLoading(false);
         }
